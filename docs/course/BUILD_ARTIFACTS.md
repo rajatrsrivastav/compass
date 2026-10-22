@@ -22,3 +22,4 @@ Use the final `v0.1.0` release tag. The earlier `v0.1.0-desktop-mvp` development
 - The unpacked `release/mac-arm64/OSS Compass.app` now contains 0.2.0; the historical 0.1 ZIP remains separate.
 - Same native SQLite packaging and platform limits apply. Windows build/runtime and live OpenAI validation are not claimed.
 - Packaged smoke passed: actual bundled executable, app.isPackaged=true, onboarding, SQLite demo seed and issue navigation.
+- Tracked source at `fa0b2f9` also built from a fresh Git archive with existing dependencies linked in; this is a source-completeness check, not byte reproducibility. Packaged Info.plist reports 0.2.0.

@@ -59,3 +59,5 @@ M6 verification: final 0.2 typecheck/lint passed; 53 local tests passed with two
 The original Electron/main/preload/React/Zustand/SQLite/npm architecture, historical migrations and Git history, manual community import fallback, deterministic chat, demo separation and prohibition on automatic GitHub writes were preserved. No broad rewrite, secret migration, external publishing or account messaging occurred.
 
 Packaged smoke passed against the actual 0.2.0 executable: app.isPackaged=true, SQLite/onboarding/demo/navigation succeed. No remote is configured; no push, PR or publication was performed.
+
+Final source-completeness check passed: archived committed source at fa0b2f9 built in a separate temporary directory using installed dependencies. Package metadata reports 0.2.0. Actual milestone hashes are in the regenerated GIT_MILESTONES report; the report's own final documentation commit is necessarily subsequent to generation.
