@@ -1,0 +1,6 @@
+import {execFileSync} from 'node:child_process'
+import {writeFileSync} from 'node:fs'
+const output=execFileSync('git',['log','--reverse','--format=%H%x09%aI%x09%s'],{encoding:'utf8'}).trim()
+let report='# Verified Git milestones\n\nGenerated from the actual local Git history. No timestamps are reconstructed or backdated. The starting workspace had no project commits or prior-week artifacts. Test evidence is recorded in the dated development journal; it is not inferred from commit messages. This report includes commits that existed when generated; run `npm run history` for later commits.\n\n'
+for(const line of output.split('\n')){if(!line)continue;const [hash,date,subject]=line.split('\t');const files=execFileSync('git',['diff-tree','--root','--no-commit-id','--name-only','-r',hash],{encoding:'utf8'}).trim();report+=`## ${subject}\n\n- Commit: \`${hash}\`\n- Actual author date: ${date}\n- Milestone: ${subject}\n- Recorded validation: see [development journal](../development-journal/2026-10-22.md).\n\nFiles:\n\n\`\`\`text\n${files}\n\`\`\`\n\n`}
+writeFileSync('docs/course/GIT_MILESTONES.md',report)
