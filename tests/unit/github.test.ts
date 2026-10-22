@@ -259,3 +259,60 @@ it("reserves low API allowance for core repository data", async () => {
   expect(store.get("repositories", "a/b")?.error).toContain("allowance is low");
   expect(store.get("repositories", "a/b")?.partial).toBe(true);
 });
+it("does not persist private metadata", async () => {
+  const { store, client } = setup(
+    vi
+      .fn()
+      .mockResolvedValue(
+        Response.json(
+          { private: true, description: "private fixture" },
+          { headers: { etag: '"private"' } },
+        ),
+      ),
+  );
+  await expect(client.request("/repos/a/b")).rejects.toThrow("public GitHub");
+  expect(store.db.prepare("SELECT * FROM http_cache").all()).toEqual([]);
+});
+it("stops cyclic pagination even for empty pages", async () => {
+  const fetcher = vi
+    .fn()
+    .mockImplementation(() =>
+      Promise.resolve(
+        Response.json([], {
+          headers: {
+            link: '<https://api.github.com/repos/a/b/issues>; rel="next"',
+          },
+        }),
+      ),
+    );
+  const { client } = setup(fetcher);
+  await expect(client.pages("/repos/a/b/issues", 100)).rejects.toThrow(
+    "pagination",
+  );
+  expect(fetcher).toHaveBeenCalledTimes(1);
+});
+it("owns redirected pagination cache by literal repository and deletes only that owner", async () => {
+  const fetcher = vi
+    .fn()
+    .mockImplementation((input: URL) =>
+      Promise.resolve(
+        Response.json([1], {
+          headers: {
+            etag: '"e"',
+            ...(input.pathname.includes("/repos/a/a_b")
+              ? {
+                  link: '<https://api.github.com/repositories/123/issues?page=2>; rel="next"',
+                }
+              : {}),
+          },
+        }),
+      ),
+    );
+  const { store, client } = setup(fetcher);
+  await client.pages("/repos/a/a_b/issues", 10);
+  await client.request("/repos/a/axb/issues");
+  store.delete("repositories", "a/a_b");
+  expect(store.db.prepare("SELECT repo FROM http_cache").all()).toEqual([
+    { repo: "a/axb" },
+  ]);
+});

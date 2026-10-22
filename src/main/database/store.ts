@@ -71,7 +71,18 @@ export class Store {
           .prepare("INSERT INTO migrations VALUES(2,?)")
           .run(new Date().toISOString());
       })();
+    if (!this.db.prepare("SELECT 1 FROM migrations WHERE version=3").get())
+      this.db.transaction(() => {
+        // HTTP responses are disposable. Older rows have no reliable owner after redirects.
+        this.db.exec(
+          "DELETE FROM http_cache; ALTER TABLE http_cache ADD COLUMN repo TEXT NOT NULL DEFAULT ''; CREATE INDEX http_cache_repo ON http_cache(repo);",
+        );
+        this.db
+          .prepare("INSERT INTO migrations VALUES(3,?)")
+          .run(new Date().toISOString());
+      })();
   }
+
   all<K extends keyof Tables>(table: K): Tables[K][] {
     return (
       this.db.prepare(`SELECT data FROM ${table}`).all() as { data: string }[]
@@ -116,12 +127,7 @@ export class Store {
           this.delete("items", item.id);
         for (const c of this.all("changes").filter((c) => c.repo === id))
           this.delete("changes", c.id);
-        this.db
-          .prepare("DELETE FROM http_cache WHERE url LIKE ?")
-          .run(`https://api.github.com/repos/${id}/%`);
-        this.db
-          .prepare("DELETE FROM http_cache WHERE url=?")
-          .run(`https://api.github.com/repos/${id}`);
+        this.db.prepare("DELETE FROM http_cache WHERE repo=?").run(id);
       }
       this.db.prepare(`DELETE FROM ${table} WHERE id=?`).run(id);
       this.db

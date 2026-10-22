@@ -13,7 +13,7 @@ import { useApp } from "./store";
 import { Button } from "./components/ui/button";
 import { Heading, Badge, Empty, Markdown, date } from "./components/common";
 export function Chat() {
-  const { data: s, act, select, busy } = useApp();
+  const { data: s, act, select, openSource, busy } = useApp();
   const [active, setActive] = useState(""),
     [text, setText] = useState(""),
     [query, setQuery] = useState(""),
@@ -186,8 +186,7 @@ export function Chat() {
                             key={id}
                             onClick={() => {
                               if (s.items.some((i) => i.id === id)) select(id);
-                              else
-                                useApp.getState().navigate("Community Context");
+                              else openSource(id);
                             }}
                           >
                             {s.sources.find((x) => x.id === id)?.title ?? id}

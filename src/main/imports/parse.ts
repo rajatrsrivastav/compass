@@ -15,21 +15,28 @@ export function parseImport(text: string, format: string): Segment[] {
     throw new Error("Unsupported import format.");
   if (format === "json") {
     const raw = JSON.parse(text);
-    const messages = Array.isArray(raw) ? raw : raw.messages;
+    const messages = Array.isArray(raw) ? raw : raw?.messages;
     if (
       !Array.isArray(messages) ||
-      !messages.every((m) => typeof m.text === "string")
+      !messages.every(
+        (m) => m && typeof m === "object" && typeof m.text === "string",
+      )
     )
       throw new Error(
         "Expected a Slack channel export array or { messages: [...] }.",
       );
-    return messages.map((m) => ({
-      text: `${m.user ?? "Unknown speaker"}: ${m.text}`,
-      timestamp:
-        m.ts && Number.isFinite(Number(m.ts))
-          ? new Date(Number(m.ts) * 1000).toISOString()
-          : null,
-    }));
+    return messages.map((m) => {
+      const milliseconds =
+        typeof m.ts === "string" || typeof m.ts === "number"
+          ? Number(m.ts) * 1000
+          : NaN;
+      const validTime =
+        Number.isFinite(milliseconds) && Math.abs(milliseconds) <= 8.64e15;
+      return {
+        text: `${typeof m.user === "string" ? m.user : "Unknown speaker"}: ${m.text}`,
+        timestamp: validTime ? new Date(milliseconds).toISOString() : null,
+      };
+    });
   }
   if (format === "srt" || format === "vtt") {
     const blocks = text.replace(/\r/g, "").split(/\n\s*\n/);

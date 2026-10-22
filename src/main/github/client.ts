@@ -44,8 +44,9 @@ export class GitHubClient {
   request<T>(
     path: string,
     signal?: AbortSignal,
+    owner?: string,
   ): Promise<{ data: T; link: string }> {
-    const run = () => this.execute<T>(path, signal);
+    const run = () => this.execute<T>(path, signal, owner);
     const next = this.tail.then(run, run);
     this.tail = next.catch(() => {});
     return next;
@@ -53,6 +54,7 @@ export class GitHubClient {
   private async execute<T>(
     path: string,
     signal?: AbortSignal,
+    owner?: string,
   ): Promise<{ data: T; link: string }> {
     const url = new URL(path, "https://api.github.com");
     if (!this.approved(url))
@@ -111,12 +113,27 @@ export class GitHubClient {
       const data = (await response.json()) as T,
         etag = response.headers.get("etag"),
         link = response.headers.get("link") ?? "";
-      if (etag)
+      const repo =
+        owner ??
+        url.pathname.match(/^\/repos\/([^/]+\/[^/]+)/)?.[1]?.toLowerCase() ??
+        "";
+      if (
+        data &&
+        typeof data === "object" &&
+        "private" in data &&
+        data.private === true
+      ) {
+        this.store.db.prepare("DELETE FROM http_cache WHERE repo=?").run(repo);
+        throw new Error(
+          "This workspace only stores public GitHub repositories.",
+        );
+      }
+      if (etag && repo)
         this.store.db
           .prepare(
-            "INSERT INTO http_cache VALUES(?,?,?,?) ON CONFLICT(url) DO UPDATE SET etag=excluded.etag,body=excluded.body,link=excluded.link",
+            "INSERT INTO http_cache(url,etag,body,link,repo) VALUES(?,?,?,?,?) ON CONFLICT(url) DO UPDATE SET etag=excluded.etag,body=excluded.body,link=excluded.link,repo=excluded.repo",
           )
-          .run(url.href, etag, JSON.stringify(data), link);
+          .run(url.href, etag, JSON.stringify(data), link, repo);
       return { data, link };
     }
     throw new Error("GitHub request failed");
@@ -136,10 +153,20 @@ export class GitHubClient {
   }
   async pages<T>(path: string, limit: number, signal?: AbortSignal) {
     let next = path;
+    const owner = new URL(path, "https://api.github.com").pathname
+      .match(/^\/repos\/([^/]+\/[^/]+)/)?.[1]
+      ?.toLowerCase();
+    const visited = new Set<string>();
     const data: T[] = [];
     let partial = false;
     while (next) {
-      const result = await this.request<T[]>(next, signal);
+      const key = new URL(next, "https://api.github.com").href;
+      if (visited.has(key) || visited.size >= 100)
+        throw new Error(
+          "GitHub pagination repeated or exceeded the page budget.",
+        );
+      visited.add(key);
+      const result = await this.request<T[]>(next, signal, owner);
       if (!Array.isArray(result.data))
         throw new Error("Unexpected GitHub list response");
       const remaining = limit - data.length;

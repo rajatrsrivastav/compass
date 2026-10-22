@@ -149,11 +149,13 @@ export class Service {
       case "source:delete": {
         const source = this.store.get("sources", a.id);
         if (source) {
-          for (const c of this.store
-            .all("changes")
-            .filter((c) => c.sourceId === source.id))
-            this.store.delete("changes", c.id);
-          this.store.delete("sources", a.id);
+          this.store.db.transaction(() => {
+            for (const c of this.store
+              .all("changes")
+              .filter((c) => c.sourceId === source.id))
+              this.store.delete("changes", c.id);
+            this.store.delete("sources", a.id);
+          })();
         }
         break;
       }

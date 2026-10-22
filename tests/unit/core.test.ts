@@ -75,3 +75,10 @@ describe("permission-respecting import", () => {
   it("does not invent candidate matches", () =>
     expect(candidates("hello", [], [])).toEqual([]));
 });
+it("validates Slack JSON rows and handles invalid timestamp ranges", () => {
+  for (const raw of ["null", "[null]", '{"messages":[3]}'])
+    expect(() => parseImport(raw, "json")).toThrow("Expected a Slack");
+  expect(
+    parseImport('[{"text":"hello","ts":"1e100","user":{}}]', "json"),
+  ).toEqual([{ text: "Unknown speaker: hello", timestamp: null }]);
+});

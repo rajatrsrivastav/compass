@@ -144,3 +144,36 @@ it("enforces weekly capacity and labels factual exports", async () => {
     "Manually entered achievements (unverified)",
   );
 });
+it("keeps the old credential when replacement encryption fails", () => {
+  const { dir } = setup();
+  let fail = false;
+  const path = join(dir, "atomic.enc");
+  const encryption = {
+    isEncryptionAvailable: () => true,
+    encryptString: (s: string) => {
+      if (fail) throw new Error("Keychain locked");
+      return Buffer.from(s);
+    },
+    decryptString: (b: Buffer) => b.toString(),
+  };
+  const credentials = new Credentials(path, encryption);
+  credentials.set("previous-test-token", true);
+  fail = true;
+  expect(() => credentials.set("replacement-test-token", true)).toThrow(
+    "Keychain locked",
+  );
+  expect(credentials.get()).toBe("previous-test-token");
+  expect(readFileSync(path, "utf8")).toBe("previous-test-token");
+  expect(credentials.status().persistent).toBe(true);
+});
+it("keeps session credentials when the persistence destination cannot be written", () => {
+  const { dir } = setup();
+  const c = new Credentials(join(dir, "missing", "key.enc"), {
+    ...noEncryption,
+    isEncryptionAvailable: () => true,
+  });
+  c.set("session-test-token", false);
+  expect(() => c.set("new-test-token", true)).toThrow();
+  expect(c.get()).toBe("session-test-token");
+  expect(c.status().persistent).toBe(false);
+});

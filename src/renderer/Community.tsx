@@ -21,9 +21,9 @@ import {
 } from "./components/common";
 import type { Annotation } from "../shared/types";
 export function Community() {
-  const { data: s, act, select } = useApp();
+  const { data: s, act, select, source: routedSource } = useApp();
   const [create, setCreate] = useState(false),
-    [active, setActive] = useState(""),
+    [active, setActive] = useState(routedSource ?? ""),
     [query, setQuery] = useState(""),
     [matches, setMatches] = useState<string[] | null>(null),
     [title, setTitle] = useState(""),

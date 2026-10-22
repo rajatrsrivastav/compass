@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { X, Bookmark, ExternalLink, FileText, CheckCheck } from "lucide-react";
 import type { ReviewState } from "../shared/types";
 import { useApp } from "./store";
@@ -6,14 +6,37 @@ import { rank } from "../shared/ranking";
 import { Button } from "./components/ui/button";
 import { Badge, Markdown, OpenButton, date } from "./components/common";
 export function Detail() {
-  const { data: s, selected, select, act, navigate } = useApp();
+  const { data: s, selected, select, act, openSource } = useApp();
+  const dialog = useRef<HTMLDialogElement>(null);
   const item = s?.items.find((i) => i.id === selected);
   const [note, setNote] = useState("");
   useEffect(() => setNote(item?.note ?? ""), [item?.id, item?.note]);
+  useEffect(() => {
+    if (!selected) return;
+    const prior = document.activeElement as HTMLElement | null;
+    const node = dialog.current;
+    node?.showModal();
+    node?.querySelector<HTMLButtonElement>("button")?.focus();
+    return () => {
+      node?.close();
+      if (prior?.isConnected) prior.focus();
+    };
+  }, [selected]);
   if (!selected || !s) return null;
   if (!item)
     return (
-      <div className="drawer-scrim" onClick={() => select(null)}>
+      <dialog
+        ref={dialog}
+        className="drawer-modal"
+        aria-label="Item details"
+        onCancel={(e) => {
+          e.preventDefault();
+          select(null);
+        }}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) select(null);
+        }}
+      >
         <aside className="drawer" onClick={(e) => e.stopPropagation()}>
           <Button variant="ghost" onClick={() => select(null)}>
             Close
@@ -24,7 +47,7 @@ export function Detail() {
             synchronization limit. Check the repository on GitHub.
           </p>
         </aside>
-      </div>
+      </dialog>
     );
   const opportunity = rank(s.items, s.sources, s.profile).find(
       (r) => r.item.id === item.id,
@@ -33,13 +56,19 @@ export function Detail() {
       source.refs.some((r) => r.repo === item.repo && r.number === item.number),
     );
   return (
-    <div className="drawer-scrim" onClick={() => select(null)}>
-      <aside
-        className="drawer"
-        role="dialog"
-        aria-label="Item details"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <dialog
+      ref={dialog}
+      className="drawer-modal"
+      aria-label="Item details"
+      onCancel={(e) => {
+        e.preventDefault();
+        select(null);
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) select(null);
+      }}
+    >
+      <aside className="drawer" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-top">
           <Badge tone={item.provenance === "demo" ? "amber" : "green"}>
             {item.provenance === "demo"
@@ -163,8 +192,7 @@ export function Detail() {
                   <button
                     className="text-link"
                     onClick={() => {
-                      select(null);
-                      navigate("Community Context");
+                      openSource(source.id);
                     }}
                   >
                     {source.title}
@@ -212,6 +240,6 @@ export function Detail() {
           )}
         </section>
       </aside>
-    </div>
+    </dialog>
   );
 }

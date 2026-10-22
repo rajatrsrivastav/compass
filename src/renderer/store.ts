@@ -4,6 +4,8 @@ interface State {
   data: Snapshot | null;
   page: string;
   selected: string | null;
+  source: string | null;
+  openSource: (id: string) => void;
   error: string;
   notice: string;
   busy: number;
@@ -16,6 +18,9 @@ export const useApp = create<State>((set, get) => ({
   data: null,
   page: "Overview",
   selected: null,
+  source: null,
+  openSource: (source) =>
+    set({ page: "Community Context", source, selected: null }),
   error: "",
   notice: "",
   busy: 0,

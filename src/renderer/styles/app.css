@@ -1664,3 +1664,8 @@ summary {
     font-size: 10px;
   }
 }
+
+.drawer-modal { border: 0; padding: 0; margin: 0 0 0 auto; height: 100dvh; max-height: 100dvh; width: min(720px, 100vw); max-width: 100vw; background: var(--bg); color: inherit; }
+.drawer-modal::backdrop { background: rgb(0 0 0 / 55%); }
+.drawer-modal .drawer { width: 100%; max-width: none; height: 100%; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }

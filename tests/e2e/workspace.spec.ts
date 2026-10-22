@@ -38,6 +38,13 @@ test("complete offline contribution workflow survives a desktop restart", async 
     await page
       .getByRole("heading", { name: "Reduce canvas redraws during playback" })
       .click();
+    const details = page.getByRole("dialog", { name: "Item details" });
+    await expect(details).toBeVisible();
+    await expect(page.getByRole("button", { name: "Close details" })).toBeFocused();
+    for (let tab = 0; tab < 8; tab++) {
+      await page.keyboard.press("Tab");
+      expect(await details.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+    }
     await page
       .getByLabel("Investigation notes")
       .fill("Measure frame times before proposing an optimization.");
