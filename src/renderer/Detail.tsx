@@ -1,3 +1,4 @@
+import { BeforeStart } from "./BeforeStart";
 import { useEffect, useState, useRef } from "react";
 import { X, Bookmark, ExternalLink, FileText, CheckCheck } from "lucide-react";
 import type { ReviewState } from "../shared/types";
@@ -49,9 +50,13 @@ export function Detail() {
         </aside>
       </dialog>
     );
-  const opportunity = rank(s.items, s.sources, s.profile).find(
-      (r) => r.item.id === item.id,
-    ),
+  const opportunity = rank(
+      s.items,
+      s.sources,
+      s.profile,
+      Date.now(),
+      s.repositories,
+    ).find((r) => r.item.id === item.id),
     related = s.sources.filter((source) =>
       source.refs.some((r) => r.repo === item.repo && r.number === item.number),
     );
@@ -124,6 +129,7 @@ export function Detail() {
             </small>
           </section>
         )}
+        {item.kind === "issue" && <BeforeStart item={item} snapshot={s} />}
         <h2>Description</h2>
         <Markdown>{item.body || "No description available."}</Markdown>
         {item.kind === "pr" && (
@@ -221,6 +227,17 @@ export function Detail() {
         </section>
         <section>
           <h2>Discussion & review activity</h2>
+          <p className="muted">
+            Discussion observed {date(item.commentsObservedAt ?? null)} ·{" "}
+            {item.commentsComplete
+              ? "page coverage complete"
+              : "partial / unknown coverage"}
+            . Reviews observed {date(item.reviewsObservedAt ?? null)} ·{" "}
+            {item.reviewsComplete
+              ? "page coverage complete"
+              : "partial / unknown coverage"}
+            .
+          </p>
           {[...item.comments, ...item.reviews].map((c, n) => (
             <article className="comment" key={n}>
               <div className="comment-head">

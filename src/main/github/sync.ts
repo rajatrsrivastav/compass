@@ -1,4 +1,5 @@
 import type { Store } from "../database/store";
+import { fetchGuidance } from "./guidance";
 import { GitHubClient, GitHubError } from "./client";
 import type { Item, Comment, Repository } from "../../shared/types";
 const comments = (rows: any[]): Comment[] =>
@@ -29,6 +30,7 @@ export function mapItem(repo: string, row: any, kind: "issue" | "pr"): Item {
     observedAt: new Date().toISOString(),
     comments: [],
     reviews: [],
+    headSha: kind === "pr" ? row.head?.sha : undefined,
     checks: "Not fetched",
     provenance: "github",
     saved: false,
@@ -93,6 +95,10 @@ export class SyncService {
           item.comments = old.comments;
           item.reviews = old.reviews;
           item.checks = old.checks;
+          item.commentsObservedAt = old.commentsObservedAt;
+          item.commentsComplete = old.commentsComplete;
+          item.reviewsObservedAt = old.reviewsObservedAt;
+          item.reviewsComplete = old.reviewsComplete;
         }
       }
       for (let i = 0; i < items.length; i++) {
@@ -117,6 +123,8 @@ export class SyncService {
             signal,
           );
           item.comments = comments(cs.data);
+          item.commentsObservedAt = new Date().toISOString();
+          item.commentsComplete = !cs.partial;
           partial ||= cs.partial;
           if (item.kind === "pr") {
             const rs = await this.client.pages<any>(
@@ -130,6 +138,8 @@ export class SyncService {
               signal,
             );
             item.reviews = [...comments(rs.data), ...comments(rc.data)];
+            item.reviewsObservedAt = new Date().toISOString();
+            item.reviewsComplete = !rs.partial && !rc.partial;
             partial ||= rs.partial || rc.partial;
             const raw = prs.data.find((p) => p.number === item.number);
             if (raw?.head?.sha) {
@@ -169,43 +179,28 @@ export class SyncService {
           warnings.push(`Discussion details for #${item.number} unavailable`);
         }
       }
-      const guidance = { ...repo.guidance };
-      for (const file of [
-        "README.md",
-        "CONTRIBUTING.md",
-        "CODE_OF_CONDUCT.md",
-      ]) {
-        if (enrichmentStopped) break;
-        if (this.client.remaining !== null && this.client.remaining <= 8) {
-          partial = true;
-          warnings.push(
-            "Contributor guidance deferred because the GitHub API allowance is low.",
-          );
-          break;
-        }
-        try {
-          const r = await this.client.request<any>(
-            `/repos/${id}/contents/${file}`,
-            signal,
-          );
-          if (r.data.encoding === "base64")
-            guidance[file] = Buffer.from(r.data.content, "base64")
-              .toString("utf8")
-              .slice(0, 100000);
-        } catch (e) {
-          if (signal.aborted) throw e;
-          if (e instanceof GitHubError && [403, 429].includes(e.status)) {
-            partial = true;
-            warnings.push(
-              `Core items synchronized; guidance fetch stopped: ${e.message}`,
-            );
-            break;
-          }
-          if (!(e instanceof GitHubError && e.status === 404)) {
-            partial = true;
-            warnings.push(`${file} unavailable`);
-          }
-        }
+      const result = enrichmentStopped
+        ? undefined
+        : await fetchGuidance(this.client, repo, signal);
+      const briefing =
+        result?.briefing ??
+        (repo.briefing
+          ? {
+              ...repo.briefing,
+              documents: repo.briefing.documents.map((d) => ({
+                ...d,
+                stale: true,
+              })),
+            }
+          : undefined);
+      const guidance = briefing
+        ? Object.fromEntries(briefing.documents.map((d) => [d.path, d.text]))
+        : repo.guidance;
+      if (!result || result.partial) {
+        partial = true;
+        warnings.push(
+          "Contributor briefing has deferred, truncated or unavailable evidence.",
+        );
       }
       signal.throwIfAborted();
       this.store.db.transaction(() => {
@@ -225,6 +220,7 @@ export class SyncService {
           error: warnings.length ? warnings.join("; ") : null,
           partial,
           guidance,
+          briefing,
           remaining: this.client.remaining,
         };
         this.store.put("repositories", updated);

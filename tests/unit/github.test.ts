@@ -274,17 +274,15 @@ it("does not persist private metadata", async () => {
   expect(store.db.prepare("SELECT * FROM http_cache").all()).toEqual([]);
 });
 it("stops cyclic pagination even for empty pages", async () => {
-  const fetcher = vi
-    .fn()
-    .mockImplementation(() =>
-      Promise.resolve(
-        Response.json([], {
-          headers: {
-            link: '<https://api.github.com/repos/a/b/issues>; rel="next"',
-          },
-        }),
-      ),
-    );
+  const fetcher = vi.fn().mockImplementation(() =>
+    Promise.resolve(
+      Response.json([], {
+        headers: {
+          link: '<https://api.github.com/repos/a/b/issues>; rel="next"',
+        },
+      }),
+    ),
+  );
   const { client } = setup(fetcher);
   await expect(client.pages("/repos/a/b/issues", 100)).rejects.toThrow(
     "pagination",
@@ -292,22 +290,20 @@ it("stops cyclic pagination even for empty pages", async () => {
   expect(fetcher).toHaveBeenCalledTimes(1);
 });
 it("owns redirected pagination cache by literal repository and deletes only that owner", async () => {
-  const fetcher = vi
-    .fn()
-    .mockImplementation((input: URL) =>
-      Promise.resolve(
-        Response.json([1], {
-          headers: {
-            etag: '"e"',
-            ...(input.pathname.includes("/repos/a/a_b")
-              ? {
-                  link: '<https://api.github.com/repositories/123/issues?page=2>; rel="next"',
-                }
-              : {}),
-          },
-        }),
-      ),
-    );
+  const fetcher = vi.fn().mockImplementation((input: URL) =>
+    Promise.resolve(
+      Response.json([1], {
+        headers: {
+          etag: '"e"',
+          ...(input.pathname.includes("/repos/a/a_b")
+            ? {
+                link: '<https://api.github.com/repositories/123/issues?page=2>; rel="next"',
+              }
+            : {}),
+        },
+      }),
+    ),
+  );
   const { store, client } = setup(fetcher);
   await client.pages("/repos/a/a_b/issues", 10);
   await client.request("/repos/a/axb/issues");
@@ -315,4 +311,109 @@ it("owns redirected pagination cache by literal repository and deletes only that
   expect(store.db.prepare("SELECT repo FROM http_cache").all()).toEqual([
     { repo: "a/axb" },
   ]);
+});
+it("discovers supported guidance locations, records absence and retires removed documents", async () => {
+  const { fetchGuidance } = await import("../../src/main/github/guidance");
+  let removed = false;
+  const fetcher = vi.fn(async (input: any) => {
+    const path = new URL(input).pathname;
+    if (path.endsWith("/contents"))
+      return Response.json([
+        { type: "file", name: "README.md" },
+        { type: "file", name: "package.json" },
+      ]);
+    if (path.endsWith("/contents/.github"))
+      return Response.json(
+        removed
+          ? []
+          : [
+              { type: "file", name: "CONTRIBUTING.md" },
+              { type: "file", name: "AI_POLICY.md" },
+            ],
+      );
+    if (path.endsWith("/contents/docs"))
+      return new Response("", { status: 404 });
+    return Response.json({
+      encoding: "base64",
+      content: Buffer.from("Read and coordinate").toString("base64"),
+      html_url: "https://github.com/a/b/blob/main/CONTRIBUTING.md",
+    });
+  });
+  const { store, client } = setup(fetcher);
+  const repo = {
+    id: "a/b",
+    name: "a/b",
+    description: "",
+    language: "",
+    stars: 0,
+    provenance: "github" as const,
+    syncedAt: null,
+    error: null,
+    partial: false,
+    guidance: {},
+    remaining: null,
+  };
+  const first = await fetchGuidance(client, repo, new AbortController().signal);
+  expect(first.briefing.documents.map((d) => d.path)).toEqual([
+    "README.md",
+    ".github/AI_POLICY.md",
+    ".github/CONTRIBUTING.md",
+  ]);
+  expect(first.briefing.locations[2].status).toBe("missing");
+  removed = true;
+  const second = await fetchGuidance(
+    client,
+    { ...repo, briefing: first.briefing },
+    new AbortController().signal,
+  );
+  expect(second.briefing.documents.map((d) => d.path)).toEqual(["README.md"]);
+  client.remaining = 7;
+  const deferred = await fetchGuidance(
+    client,
+    { ...repo, briefing: first.briefing },
+    new AbortController().signal,
+  );
+  expect(deferred.partial).toBe(true);
+  expect(deferred.briefing.documents.every((d) => d.stale)).toBe(true);
+  expect(store.all("items")).toHaveLength(0);
+});
+it("keeps old discussion timestamps when a later core sync skips enrichment", async () => {
+  let low = false;
+  const fetcher = vi.fn(async (input: any) => {
+    const path = new URL(input).pathname;
+    if (path.includes("/contents")) return new Response("", { status: 404 });
+    const body = path.endsWith("/issues")
+      ? [{ number: 1, title: "Issue", state: "open" }]
+      : path.endsWith("/pulls") || path.endsWith("/comments")
+        ? []
+        : { private: false };
+    return Response.json(body, {
+      headers: { "x-ratelimit-remaining": low ? "7" : "100" },
+    });
+  });
+  const { store, client } = setup(fetcher);
+  store.put("repositories", {
+    id: "a/b",
+    name: "a/b",
+    description: "",
+    language: "",
+    stars: 0,
+    provenance: "github",
+    syncedAt: null,
+    error: null,
+    partial: false,
+    guidance: {},
+    remaining: null,
+  });
+  const sync = new SyncService(store, client);
+  await sync.sync("a/b");
+  const old = store.get("items", "a/b#1")!;
+  expect(old.commentsComplete).toBe(true);
+  expect(old.commentsObservedAt).toBeTruthy();
+  low = true;
+  await sync.sync("a/b");
+  expect(store.get("items", "a/b#1")?.commentsObservedAt).toBe(
+    old.commentsObservedAt,
+  );
+  expect(store.get("repositories", "a/b")?.partial).toBe(true);
 });

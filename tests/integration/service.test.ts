@@ -177,3 +177,21 @@ it("keeps session credentials when the persistence destination cannot be written
   expect(c.get()).toBe("session-test-token");
   expect(c.status().persistent).toBe(false);
 });
+it("includes related PR evidence in deterministic issue summaries", async () => {
+  const { service, store } = setup();
+  await service.act({ type: "demo:seed" });
+  const issue = store.all("items").find((i) => i.kind === "issue")!;
+  const pr = store.all("items").find((i) => i.kind === "pr")!;
+  store.put("items", { ...pr, body: `See #${issue.number}`, state: "open" });
+  await service.act({ type: "chat:create", title: "Related work" });
+  const c = service.snapshot().conversations.find((c) => !c.demo)!;
+  await service.act({
+    type: "chat:send",
+    id: c.id,
+    text: "Existing work?",
+    sources: [issue.id],
+  });
+  const answer = store.get("conversations", c.id)!.messages[1];
+  expect(answer.text).toContain("Related PR already open");
+  expect(answer.sources).toContain(pr.id);
+});

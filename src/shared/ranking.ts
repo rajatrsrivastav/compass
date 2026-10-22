@@ -1,4 +1,5 @@
-import type { Item, Source, Profile, Opportunity } from "./types";
+import type { Item, Source, Profile, Opportunity, Repository } from "./types";
+import { workIndex, assessWork } from "./intelligence";
 export const weights = {
   open: 15,
   beginner: 24,
@@ -15,7 +16,10 @@ export function rank(
   sources: Source[],
   profile: Profile,
   now = Date.now(),
+  repositories: Repository[] = [],
 ): Opportunity[] {
+  const relatedIndex = workIndex(items);
+  const repoIndex = new Map(repositories.map((r) => [r.id, r]));
   return items
     .filter((i) => i.kind === "issue" && i.state === "open")
     .map((item) => {
@@ -81,28 +85,30 @@ export function rank(
         );
         if (!item.assignees.length) category = "Community-context match";
       }
-      if (
-        items.some(
-          (p) =>
-            p.kind === "pr" &&
-            p.state === "open" &&
-            p.repo === item.repo &&
-            new RegExp(
-              `(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\\s+(?:https://github.com/${item.repo}/issues/)?#?${item.number}\\b`,
-              "i",
-            ).test(p.body),
-        )
-      ) {
+      const work = assessWork(
+        item,
+        repoIndex.get(item.repo),
+        relatedIndex.get(item.id) ?? [],
+      );
+      if (work.related.some((p) => p.item.state === "open")) {
         score += weights.relatedPR;
-        reasons.push("An open PR explicitly claims to address this issue.");
+        reasons.push(
+          "An open PR explicitly references or is referenced by this issue. Verify its scope.",
+        );
         category = "Possibly blocked or already being addressed";
       }
+      reasons.push(
+        work.status +
+          ". Cached evidence cannot establish that nobody else is working on it.",
+      );
       return {
         item,
         score: Math.max(0, Math.min(100, score)),
         category,
         reasons,
         sourceIds: refs.map((s) => s.id),
+        workStatus: work.status,
+        relatedIds: work.related.map((r) => r.item.id),
       };
     })
     .sort((a, b) => b.score - a.score || a.item.id.localeCompare(b.item.id));

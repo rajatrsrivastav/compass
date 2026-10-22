@@ -18,7 +18,8 @@ export function Issues({ prs = false }: { prs?: boolean }) {
     [saved, setSaved] = useState(false),
     [state, setState] = useState("open");
   const ranked = useMemo(
-    () => (s ? rank(s.items, s.sources, s.profile) : []),
+    () =>
+      s ? rank(s.items, s.sources, s.profile, Date.now(), s.repositories) : [],
     [s],
   );
   if (!s) return null;
@@ -32,6 +33,7 @@ export function Issues({ prs = false }: { prs?: boolean }) {
             score: 0,
             reasons: [],
             sourceIds: [],
+            workStatus: "",
           }))
       : ranked
   ).filter(
@@ -159,6 +161,7 @@ export function Issues({ prs = false }: { prs?: boolean }) {
                 <h3>{o.item.title}</h3>
                 <div className="issue-labels">
                   <Badge tone={prs ? "purple" : "green"}>{o.category}</Badge>
+                  {o.workStatus && <Badge tone="amber">{o.workStatus}</Badge>}
                   {o.item.labels.slice(0, 3).map((l) => (
                     <Badge key={l}>{l}</Badge>
                   ))}

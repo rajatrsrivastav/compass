@@ -16,7 +16,13 @@ import { rank } from "../shared/ranking";
 export function Overview() {
   const { data: s, navigate, select, act } = useApp();
   if (!s) return null;
-  const opportunities = rank(s.items, s.sources, s.profile),
+  const opportunities = rank(
+      s.items,
+      s.sources,
+      s.profile,
+      Date.now(),
+      s.repositories,
+    ),
     saved = s.items.filter((i) => i.saved),
     reviews = s.items.filter(
       (i) => i.kind === "pr" && i.reviewState !== "Reviewed privately",

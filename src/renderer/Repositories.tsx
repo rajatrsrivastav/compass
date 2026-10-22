@@ -1,3 +1,4 @@
+import { Briefing } from "./Briefing";
 import { useState } from "react";
 import {
   FolderGit2,
@@ -9,7 +10,7 @@ import {
 } from "lucide-react";
 import { useApp } from "./store";
 import { Button } from "./components/ui/button";
-import { Heading, Badge, Empty, Markdown, date } from "./components/common";
+import { Heading, Badge, Empty, date } from "./components/common";
 export function Repositories() {
   const { data: s, act } = useApp();
   const [name, setName] = useState(""),
@@ -119,7 +120,7 @@ export function Repositories() {
                 variant="ghost"
                 onClick={() => setGuide(guide === r.id ? null : r.id)}
               >
-                Guidance
+                Organization briefing
               </Button>
               <Button
                 aria-label={`Delete ${r.id}`}
@@ -137,23 +138,7 @@ export function Repositories() {
                 <Trash2 size={15} />
               </Button>
             </div>
-            {guide === r.id && (
-              <div className="guidance">
-                {Object.keys(r.guidance).length ? (
-                  Object.entries(r.guidance).map(([name, body]) => (
-                    <details key={name}>
-                      <summary>{name}</summary>
-                      <Markdown>{body}</Markdown>
-                    </details>
-                  ))
-                ) : (
-                  <p>
-                    No root-level guidance is cached yet. Synchronize the
-                    repository, or read its public documentation.
-                  </p>
-                )}
-              </div>
-            )}
+            {guide === r.id && <Briefing repo={r} items={s.items} />}
           </article>
         ))}
       </div>

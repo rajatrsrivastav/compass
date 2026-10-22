@@ -17,6 +17,23 @@ export interface Profile {
   primary: string;
   syncLimit: number;
 }
+export interface GuidanceDocument {
+  path: string;
+  url: string;
+  text: string;
+  observedAt: string;
+  truncated: boolean;
+  stale: boolean;
+}
+export interface Briefing {
+  documents: GuidanceDocument[];
+  locations: {
+    path: string;
+    checkedAt: string;
+    status: "checked" | "missing" | "unavailable" | "deferred";
+  }[];
+  observedAt: string;
+}
 export interface Repository {
   id: string;
   name: string;
@@ -29,6 +46,7 @@ export interface Repository {
   partial: boolean;
   guidance: Record<string, string>;
   remaining: number | null;
+  briefing?: Briefing;
 }
 export interface Item {
   id: string;
@@ -45,6 +63,11 @@ export interface Item {
   createdAt: string;
   updatedAt: string;
   observedAt: string;
+  commentsObservedAt?: string;
+  commentsComplete?: boolean;
+  reviewsObservedAt?: string;
+  reviewsComplete?: boolean;
+  headSha?: string;
   comments: Comment[];
   reviews: Comment[];
   checks: string;
@@ -142,6 +165,8 @@ export interface Opportunity {
   category: string;
   reasons: string[];
   sourceIds: string[];
+  workStatus?: string;
+  relatedIds?: string[];
 }
 export type Action =
   | { type: "profile"; value: Profile }

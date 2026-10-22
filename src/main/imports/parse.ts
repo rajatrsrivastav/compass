@@ -61,37 +61,7 @@ export function parseImport(text: string, format: string): Segment[] {
     .filter(Boolean)
     .map((text) => ({ text, timestamp: null }));
 }
-export function extractReferences(
-  text: string,
-  context: string,
-  tracked: string[],
-): Reference[] {
-  const out: Reference[] = [];
-  const add = (repo: string, n: string, evidence: string) => {
-    repo = repo.toLowerCase();
-    if (
-      tracked.includes(repo) &&
-      !out.some((r) => r.repo === repo && r.number === Number(n))
-    )
-      out.push({ repo, number: Number(n), kind: "explicit", evidence });
-  };
-  const consumed = text
-    .replace(
-      /https:\/\/github\.com\/([\w.-]+\/[\w.-]+)\/(?:issues|pull)\/(\d+)\b/gi,
-      (m, r, n) => {
-        add(r, n, m);
-        return " ".repeat(m.length);
-      },
-    )
-    .replace(/\b([\w.-]+\/[\w.-]+)#(\d+)\b/g, (m, r, n) => {
-      add(r, n, m);
-      return " ".repeat(m.length);
-    });
-  if (context && tracked.includes(context))
-    for (const m of consumed.matchAll(/(?<![\w/])#(\d+)\b/g))
-      add(context, m[1], m[0]);
-  return out;
-}
+export { extractReferences } from "../../shared/references";
 export function candidates(
   text: string,
   items: Item[],

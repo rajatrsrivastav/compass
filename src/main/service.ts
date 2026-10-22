@@ -226,7 +226,23 @@ export class Service {
         const s = this.snapshot(),
           items = s.items.filter((i) => a.sources.includes(i.id)),
           sources = s.sources.filter((i) => a.sources.includes(i.id));
-        const refs = [...items.map((i) => i.id), ...sources.map((i) => i.id)];
+        const ranked = rank(
+          s.items,
+          sources,
+          s.profile,
+          Date.now(),
+          s.repositories,
+        );
+        const relatedIds = ranked
+          .filter((r) => items.some((i) => i.id === r.item.id))
+          .flatMap((r) => r.relatedIds ?? []);
+        const refs = [
+          ...new Set([
+            ...items.map((i) => i.id),
+            ...sources.map((i) => i.id),
+            ...relatedIds,
+          ]),
+        ];
         let answer =
           "**Local evidence assistant · deterministic response**\n\n";
         if (!refs.length)
@@ -234,8 +250,12 @@ export class Service {
             "Select issue or community records to receive an evidence summary. No model is connected. For a contribution plan: reproduce the issue, read contributor guidance, coordinate with maintainers, and budget time for tests and feedback.";
         else {
           for (const i of items) {
-            const r = rank([i], sources, s.profile)[0];
+            const r = ranked.find((r) => r.item.id === i.id);
             answer += `### ${i.title}\nRecord: ${i.id}. ${i.provenance === "demo" ? "SYNTHETIC DEMO. " : ""}Last checked: ${i.observedAt}. State: ${i.state}.\n${r ? r.reasons.map((x) => "- " + x).join("\n") : "Private review state: " + i.reviewState + "."}\n\n`;
+          }
+          for (const id of relatedIds) {
+            const pr = s.items.find((i) => i.id === id)!;
+            answer += `Related work: ${pr.id}, ${pr.state}, checked ${pr.observedAt}. Explicit reference; scope needs verification.\n\n`;
           }
           for (const source of sources)
             answer += `### ${source.title}\nSource: ${source.id}; provenance: ${source.provenance}; imported: ${source.importedAt}.\n\nQuoted excerpt (untrusted source text):\n> ${source.text.slice(0, 900).replace(/\n/g, "\n> ")}\n\n${source.refs.map((r) => `- ${r.kind}: ${r.repo}#${r.number} — ${r.evidence}`).join("\n")}\n\n`;
