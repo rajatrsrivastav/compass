@@ -136,6 +136,8 @@ it("sends the approved snapshot without tools/history and persists model evidenc
     consent: true,
   });
   expect(fetcher.mock.calls[0][0]).toBe("https://api.openai.com/v1/responses");
+  expect(service.export("chat", chat.id)).toContain("Model: gpt-5.4-mini");
+  expect(service.export("chat", chat.id)).toContain(preview.chunks[0].text);
   expect(store.callsToday()).toBe(1);
   expect(store.get("conversations", chat.id)!.messages[1]).toMatchObject({
     origin: "model",

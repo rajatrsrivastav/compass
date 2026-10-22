@@ -61,3 +61,27 @@ Electron-generated screenshots are in `docs/screenshots`. Overview and community
 The audit-suggested older electron-builder version introduced more severe advisories and was reverted to 26.15.3. The remaining transitive packaging advisory has not been hidden with an unverified override. Recheck before distribution. Production-only dependencies audited cleanly.
 
 The first packaging attempt auto-discovered a local signing identity. That process was stopped, `mac.identity: null` was added, and the final artifact was rebuilt with the tool explicitly reporting that signing was skipped. No signed-release or notarization claim is made. The packaged-app smoke test used an isolated temporary profile.
+
+## Version 0.2 audit verification — 2026-10-23
+
+This section supersedes current-state claims in the historical v0.1 report above; earlier results remain historical evidence.
+
+| Command/check | Actual result |
+|---|---|
+| `npm ci` at audit baseline | Passed; 542 packages; baseline reported 8 moderate development paths |
+| `npm run typecheck` / `npm run lint` | Passed on final 0.2 source |
+| `npm test` | 53 passed; 2 opt-in tests skipped (live API and performance); 2.05 s final run |
+| `npm run test:e2e` | 3 passed in 17.5 s; real Electron, no live model traffic |
+| Live GitHub check | Passed for two public repositories in 25.30 s; partial coverage and low remaining quota correctly reported |
+| Ranking workload | Median 192.974 ms before, 3.967 ms after on same M3; synthetic ranking only |
+| `npm run build` | Passed, including final package build |
+| `npm run package:mac` | Passed; unsigned arm64 ZIP, default Electron icon |
+| Full / production `npm audit --json` | Both returned zero advisories; JSON retained in docs/audits. No dependency upgrade was made, so earlier advisory paths are not claimed repaired |
+| OpenAI | Controlled contract/failure/privacy tests passed; no live provider/account validation |
+| Devin | Access unavailable; no scans or remediations |
+
+New behavior coverage: encryption/write failure preserves old credentials; malformed Slack rows and timestamp bounds; private metadata never cached; cache deletion after redirected pagination; cycle/page budget; literal reference matching and false positives; missing/removed/deferred policy docs; per-stream observation time; related PRs in local chat; migration from v2; inspection history, heads, feedback and stale notes; cloud-preview consent/payload scope, stable chunk IDs, source changes/deletion, key absence, daily limits, invalid citations, provider errors/refusal/truncation/abstention, local fallback, model provenance/evidence restart and export.
+
+The Electron suite verifies modal focus entry/Tab containment, native imports/exports, saved settings/notes/inspection history/conversations after restart, demo separation, briefing rendering, optional cloud preview/consent/invalidation, and runtime context isolation. New screenshots were inspected visually. This is not a complete WCAG audit. Windows, signing/notarization, real personal-token OS persistence, and live OpenAI quality/access remain unverified. The first baseline sandboxed launch failed with EPERM/SIGABRT; rerunning with desktop launch permission passed. An initial new focus assertion failed, was fixed, and passed before its milestone commit.
+
+See [audit](docs/audits/POST_CODEX_AUDIT.md), [journal](docs/development-journal/2026-10-23.md) and [artifact evidence](docs/course/BUILD_ARTIFACTS.md).

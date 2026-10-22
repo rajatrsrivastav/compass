@@ -302,7 +302,7 @@ export class Service {
           "**Local evidence assistant · deterministic response**\n\n";
         if (!refs.length)
           answer +=
-            "Select issue or community records to receive an evidence summary. No model is connected. For a contribution plan: reproduce the issue, read contributor guidance, coordinate with maintainers, and budget time for tests and feedback.";
+            "Select issue or community records to receive an evidence summary. Local mode does not call a model. For a contribution plan: reproduce the issue, read contributor guidance, coordinate with maintainers, and budget time for tests and feedback.";
         else {
           for (const i of items) {
             const r = ranked.find((r) => r.item.id === i.id);
@@ -496,7 +496,7 @@ export class Service {
         c.messages
           .map(
             (m) =>
-              `## ${m.role} · ${m.origin} · ${m.at}\n\n${m.text}\n\nSources: ${m.sources.join(", ")}`,
+              `## ${m.role} · ${m.origin} · ${m.at}\n\n${m.model ? `Model: ${m.model}; total tokens: ${m.totalTokens ?? "unknown"}. Citation IDs checked, claims unverified.\n\n` : ""}${m.text}\n\nSources: ${m.sources.join(", ")}${m.evidence ? "\n\n### Supplied evidence\n" + m.evidence.map((c) => `\n${c.id} · ${c.recordId} · ${c.provenance} · observed ${c.observedAt}\n${c.title} ${c.url}\n\n> ${c.text.replace(/\n/g, "\n> ")}\n`).join("\n") : ""}`,
           )
           .join("\n\n")
       );

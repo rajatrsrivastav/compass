@@ -8,8 +8,9 @@
 - GitHub requests restricted to HTTPS api.github.com repository endpoints, including validated same-origin redirects. Authorization is not forwarded to other origins. External browser links require standard HTTPS URLs and reject local IP/localhost destinations.
 - No shell-command execution from GitHub or community text. All source text is data, including prompt-like instructions.
 - Import permission acknowledgement, explicit formats, 2 MB size limit, null-byte rejection, source provenance, and exact-passage annotation validation.
+- Credential replacement is atomic; encryption/write failures retain the prior token. Private GitHub metadata is rejected before HTTP caching.
 - Token persistence uses Electron safeStorage only when encryption is available and the backend is not basic_text. Otherwise session-only storage is offered. A token is not stored in SQLite, browser storage, source, or logs.
-- No telemetry, automatic comments/reviews/merges, hidden uploads, Slack/Discord scraping, or external AI requests.
+- No telemetry, automatic comments/reviews/merges, hidden uploads, Slack/Discord scraping, or implicit external AI requests. Optional OpenAI requests require an expiring exact-evidence preview and explicit consent in the main process; requests reject redirects and contain no action tools.
 
 ## Local-data limitations
 
@@ -24,3 +25,7 @@ The final packaging-tool audit status is recorded in TESTING.md. Avoid blind for
 ## Reporting
 
 Do not put secrets, private transcripts, or live tokens in public issue reports. Provide a minimal sanitized reproduction. This repository has no configured external vulnerability-reporting address.
+
+## Optional provider boundary (0.2)
+
+OpenAI keys use a separate OS-encrypted or session-only credential. Preview and ordinary Send perform no cloud request. Approved requests send only displayed question/chunks/metadata plus fixed grounding instructions to api.openai.com. Private item notes and prior chat history are excluded. The evidence index and persisted response snapshots are plaintext SQLite. Deleting original sources does not erase historical approved chat snapshots. Citation validation checks IDs, not factuality or comprehensive prompt-injection resistance. Provider retention policies apply even with store=false. See [details](docs/architecture/OPTIONAL_AI.md).

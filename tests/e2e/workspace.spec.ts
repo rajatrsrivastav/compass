@@ -22,6 +22,22 @@ test("complete offline contribution workflow survives a desktop restart", async 
     await page.getByRole("button", { name: "Explore demo workspace" }).click();
     await expect(page.getByText("DEMO DATA VISIBLE")).toBeVisible();
     await page
+      .getByRole("button", { name: "Repositories", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Organization briefing", exact: true })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "Organization briefing", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Missing policy is not permission", { exact: false }),
+    ).toBeVisible();
+    await page.screenshot({
+      path: "docs/screenshots/organization-briefing.png",
+      fullPage: true,
+    });
+    await page
       .getByRole("button", { name: "Opportunity Radar", exact: true })
       .click();
     await expect(
@@ -40,6 +56,7 @@ test("complete offline contribution workflow survives a desktop restart", async 
       .click();
     const details = page.getByRole("dialog", { name: "Item details" });
     await expect(details).toBeVisible();
+    await details.screenshot({ path: "docs/screenshots/before-you-start.png" });
     await expect(
       page.getByText("BEFORE YOU START", { exact: true }),
     ).toBeVisible();
@@ -72,6 +89,9 @@ test("complete offline contribution workflow survives a desktop restart", async 
     await expect(
       page.getByText("Inspection history (1)", { exact: true }),
     ).toBeVisible();
+    await page
+      .getByRole("dialog")
+      .screenshot({ path: "docs/screenshots/review-memory.png" });
     await page.getByRole("button", { name: "Close details" }).click();
     await page
       .getByRole("button", { name: "Community Context", exact: true })

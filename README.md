@@ -31,18 +31,20 @@ npm run package:win
 ## Implemented
 
 - React desktop UI with onboarding, dark/light themes, eight workspaces, detail panels, and keyboard navigation.
-- Public GitHub metadata, bounded paginated issue/PR synchronization, discussions, review entries, check runs where accessible, and root-level contributor guidance.
+- Public GitHub metadata, bounded paginated issue/PR synchronization, discussions, review entries, check runs where accessible, and evidence-linked guidance from root, .github and docs.
 - Single request queue, timeouts, cancellation, retries, ETags, conservative incremental checkpoints, rate-limit errors, and cached/offline access.
-- SQLite migrations, FTS5, preserved investigation notes, saved items, local PR review states, and change events that suppress first-sync notifications.
-- Explainable opportunity ranking using skills, labels, assignments, activity, description, explicit community references, and related PR signals.
+- SQLite migrations, FTS5, preserved investigation notes, saved items, local PR review states and persistent inspection history, and change events that suppress first-sync notifications.
+- Explainable opportunity ranking using skills, labels, assignments, activity, description, explicit community references, and explicit related/previous PR signals, with a Before You Start coverage assessment.
 - Manual notes, pasted messages, link research, TXT/MD/SRT/VTT and Slack channel JSON exports; explicit references, unverified candidates, passage classification, and search.
 - Capacity-limited weekly planning, manual deadlines, user-entered achievements, and factual Markdown reports.
-- Persistent conversations with rename/delete/search/export, selected-source deterministic responses, and separately labeled synthetic demo conversations.
-- Validated preload IPC, isolated sandboxed renderer, safe Markdown, restricted API destinations, and OS-encrypted or session-only GitHub credentials.
+- Persistent conversations with rename/delete/search/export, selected-source deterministic responses, optional consent-gated OpenAI responses with cited evidence, and separately labeled synthetic demo conversations.
+- Validated preload IPC, isolated sandboxed renderer, safe Markdown, restricted API destinations, and OS-encrypted or session-only GitHub/OpenAI credentials.
 
 ## Scope and honesty
 
-The local copilot is **deterministic, not a connected language model**. No external model integration is included in v0.1. No Slack/Discord bots, automatic reviews, merges, posting, telemetry, or hosted accounts. The complete original vision is preserved in [the user brief](docs/ai/MASTER_BUILD_PROMPT.md), with remaining work in [known limitations](docs/course/KNOWN_LIMITATIONS.md).
+The default assistant is deterministic and local. Version 0.2 adds an optional OpenAI provider with evidence preview, per-request consent and usage controls. No live OpenAI call was made during validation; contract/privacy behavior was tested with controlled responses. See [optional AI](docs/architecture/OPTIONAL_AI.md). No Slack/Discord bots, automatic reviews, merges, posting or telemetry are included. The original vision remains in [the user brief](docs/ai/MASTER_BUILD_PROMPT.md), with current boundaries in [known limitations](docs/course/KNOWN_LIMITATIONS.md).
+
+The [post-Codex audit](docs/audits/POST_CODEX_AUDIT.md) records verified repairs and benchmark evidence. Devin access was unavailable; [no Devin scans or remediations ran](docs/audits/DEVIN_SCAN_REPORT.md).
 
 Public GitHub data is always a **cached observation**, not a guarantee of current state. Synchronization budgets are explicit; large repositories show partial coverage. Manual notes are not verified transcripts. A reference does not prove maintainer endorsement.
 

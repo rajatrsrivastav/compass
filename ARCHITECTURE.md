@@ -12,6 +12,8 @@ flowchart LR
   Service --> Queue[Serial GitHub request queue]
   Queue --> GitHub[api.github.com]
   Service --> Credentials[OS safeStorage / session only]
+  Service --> Preview[Selected FTS evidence + explicit consent]
+  Preview --> OpenAI[Optional api.openai.com Responses]
 ```
 
 ## Process boundaries
@@ -22,15 +24,15 @@ flowchart LR
 
 ## Persistence
 
-SQLite WAL and foreign keys are enabled. Migration 1 establishes settings, repositories, items, sources, tasks, conversations, changes, HTTP cache, prompt templates, and the FTS5 index. Migration 2 adds synchronization checkpoints. JSON aggregates preserve nested comments, reviews, source segments, references, annotations, and conversation messages; indexed relational keys support repository ownership and deletion. This intentionally avoids dozens of premature tables in the first desktop MVP. See [schema](docs/architecture/DATABASE.md).
+SQLite WAL and foreign keys are enabled. Migration 1 establishes settings, repositories, items, sources, tasks, conversations, changes, HTTP cache, prompt templates, and the FTS5 index. Migration 2 adds synchronization checkpoints. Migration 3 scopes disposable HTTP cache rows to a literal repository owner. Migration 4 adds transactional evidence chunks in a separate FTS5 index. JSON aggregates preserve nested comments, reviews, source segments, references, annotations, and conversation messages; indexed relational keys support repository ownership and deletion. This intentionally avoids dozens of premature tables in the first desktop MVP. See [schema](docs/architecture/DATABASE.md).
 
-Every aggregate upsert updates its FTS entry in one transaction. GitHub refreshes preserve private notes, saved state, and private review state. Source IDs, item keys (`owner/repo#number`), UUID conversations/messages, timestamps, and provenance travel with their records. A whole successful repository snapshot is committed transactionally. Failed syncs retain previous records and show the error.
+Every aggregate upsert updates its FTS entry in one transaction. GitHub refreshes preserve private notes, saved state, and private review state, note head anchors, and inspection history. Source IDs, item keys (`owner/repo#number`), UUID conversations/messages, timestamps, and provenance travel with their records. A whole successful repository snapshot is committed transactionally. Failed syncs retain previous records and show the error.
 
 ## GitHub and change detection
 
 One centralized queue bounds concurrency to one request. Lists use Link pagination with a configurable record ceiling, conditional ETag responses, 20-second request timeouts, three transient-error attempts, and cancellation. Redirects are manually checked and restricted to approved paths at api.github.com. GitHub issue-endpoint PRs are filtered before storage.
 
-Issues use a conservative completed-list checkpoint with a one-minute overlap; truncated issue lists do not advance it. PRs use a bounded recently-updated list. A maximum of 12 item discussions is enriched per sync, with bounded comments/reviews/checks. Optional enrichment is deferred at eight remaining API requests to preserve core access for other repositories; partial coverage and the reason are visible. Root README, CONTRIBUTING, and CODE_OF_CONDUCT files are fetched when available. Absent files are normal; permission and detail failures are visible. Closed items are updated when returned, not guessed closed because absent from a page.
+Issues use a conservative completed-list checkpoint with a one-minute overlap; truncated issue lists do not advance it. PRs use a bounded recently-updated list. A maximum of 12 item discussions is enriched per sync, with bounded comments/reviews/checks. Optional enrichment is deferred at eight remaining API requests to preserve core access for other repositories; partial coverage and the reason are visible. A bounded discovery pass checks root, .github and docs for up to 12 supported contributor, governance, ownership and AI policy documents. Each location/document carries observation and availability metadata. Absent files are normal; permission and detail failures are visible. Closed items are updated when returned, not guessed closed because absent from a page.
 
 First synchronization establishes a baseline. Later newly observed IDs, state/update/review changes, and imported explicit references produce change events. The briefing presents recent events and explainable investigation opportunities. It is not a push-notification scheduler or an exhaustive GitHub activity ledger.
 
@@ -40,7 +42,7 @@ After an explicit initial sync, repositories older than 30 minutes are eligible 
 
 Native file import checks extension, size, and content before parsing. Manual/pasted records are explicitly unverified; imported records retain source/date/timestamps. Explicit GitHub URLs and `owner/repo#N` resolve only to tracked repositories. Bare `#N` needs a selected repository. Keyword overlap creates a separate unverified candidate. Users classify exact passages; no automatic priority endorsement is inferred.
 
-Chat is an offline deterministic evidence assistant. It stores real user interactions and source references, with `user`, `deterministic`, `model` (reserved), and `demo` origin types. No network model adapter is shipped. Demo conversations are read-only and excluded when demo visibility is off.
+Chat defaults to an offline deterministic evidence assistant. It stores user interactions and source references with `user`, `deterministic`, `model`, and `demo` origins. The optional OpenAI adapter accepts only a main-process preview token bound to exact selected evidence and explicit cloud consent. It stores model/usage metadata and supplied chunks; no tools or GitHub writes exist. See [optional AI boundaries](docs/architecture/OPTIONAL_AI.md). Demo conversations are read-only and excluded when demo visibility is off.
 
 ## Build
 

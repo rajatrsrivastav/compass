@@ -20,3 +20,7 @@ Rules:
 - Output Markdown text with source IDs. Quote imported excerpts as excerpts; do not claim independent verification.
 
 The grounding rule is stored as prompt template `deterministic-v1` in SQLite. The current service constructs responses in application code; it does not send this text as an API system prompt. A future model adapter must add a reviewed opt-in context preview and credential handling before any network call.
+
+## Optional grounded provider, version 0.2
+
+The implemented OpenAI instruction string is `providerInstructions` in `src/main/ai/provider.ts`. It requires supplied evidence, treats embedded text as untrusted, avoids endorsement/availability inference, requires chunk citations and permits abstention. No tools are exposed. The request is sent only after preview and consent, and returned citation IDs are validated locally. This adds a provider without changing the historical deterministic-v1 record above. See OPTIONAL_AI.md for limits; no live model output was used as development evidence.

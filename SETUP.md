@@ -36,10 +36,14 @@ Windows packaging is configured but cannot be claimed tested from this macOS hos
 
 ## Data locations
 
-Electron `app.getPath('userData')` contains `compass.db`, SQLite WAL files, and optionally encrypted `credentials.enc`. Typical macOS location is `~/Library/Application Support/oss-compass`; use Electron's actual path when troubleshooting. Data is never written into the repository. `OSS_COMPASS_DATA_DIR` overrides the directory for tests or separate demo profiles.
+Electron `app.getPath('userData')` contains `compass.db`, SQLite WAL files, and optionally encrypted `credentials.enc` and `credentials-openai.enc`. Typical macOS location is `~/Library/Application Support/oss-compass`; use Electron's actual path when troubleshooting. Data is never written into the repository. `OSS_COMPASS_DATA_DIR` overrides the directory for tests or separate demo profiles.
 
 The database contains potentially sensitive imported text in plaintext. OS disk encryption and account permissions protect the local data; the app does not claim SQLCipher encryption. Do not commit or share the database. Exported Markdown may contain private notes.
 
 ## Offline demo
 
 Complete onboarding, then load demo data. Fixture records and example chats are synthetic and labeled. Disable their visibility in Settings to return to the ordinary live/imported view. Existing real user conversations are retained, even if they previously referenced demo data; excerpts remain labeled with their provenance.
+
+## Optional cloud assistant (0.2)
+
+In Settings, enter your own OpenAI API key, select the documented alias or pinned model and save usage limits. Session-only is the default. In a real conversation, select evidence, enter a question, preview the retrieved passages, and explicitly consent before sending. API billing/access is separate from this app. Ordinary Send remains local. Provider errors do not trigger automatic retries. See [configuration, privacy and test limits](docs/architecture/OPTIONAL_AI.md).
