@@ -1,3 +1,4 @@
+import { AISettings } from "./AISettings";
 import { useEffect, useState } from "react";
 import { ShieldCheck, KeyRound, Database, Lock, Sun, Moon } from "lucide-react";
 import { useApp } from "./store";
@@ -149,6 +150,7 @@ export function Settings() {
               </div>
             </form>
           </section>
+          <AISettings />
           <section className="panel">
             <h2>Workspace preferences</h2>
             <div className="preference">
@@ -221,7 +223,9 @@ export function Settings() {
               Repository requests go only to api.github.com. Your optional token
               accompanies those requests. Clicking an external link opens your
               browser. There is no telemetry, automatic posting, Slack scraping,
-              or community-content upload.
+              or automatic community-content upload. Optional OpenAI requests
+              send only the explicitly approved question and previewed evidence
+              to api.openai.com. Provider data policies apply.
             </p>
           </div>
           <div>

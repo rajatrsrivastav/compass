@@ -1669,3 +1669,6 @@ summary {
 .drawer-modal::backdrop { background: rgb(0 0 0 / 55%); }
 .drawer-modal .drawer { width: 100%; max-width: none; height: 100%; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+
+.cloud-composer { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px; }
+.evidence-preview { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 300px; overflow: auto; font: inherit; }

@@ -275,7 +275,7 @@ it("upgrades a v2 cache without losing domain data", async () => {
     note: "Keep across migration",
   });
   store.db.exec(
-    "DROP INDEX http_cache_repo; ALTER TABLE http_cache DROP COLUMN repo; DELETE FROM migrations WHERE version=3;",
+    "DROP INDEX http_cache_repo; ALTER TABLE http_cache DROP COLUMN repo; DELETE FROM migrations WHERE version>=3; DROP TABLE evidence;",
   );
   store.db
     .prepare("INSERT INTO http_cache VALUES(?,?,?,?)")
@@ -290,6 +290,6 @@ it("upgrades a v2 cache without losing domain data", async () => {
     reopened.db
       .prepare("SELECT version FROM migrations ORDER BY version")
       .all(),
-  ).toEqual([{ version: 1 }, { version: 2 }, { version: 3 }]);
+  ).toEqual([{ version: 1 }, { version: 2 }, { version: 3 }, { version: 4 }]);
   reopened.migrate();
 });

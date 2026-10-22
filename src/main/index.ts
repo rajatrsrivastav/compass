@@ -37,7 +37,11 @@ app.whenReady().then(() => {
     store,
     new GitHubClient(store, () => credentials.get()),
   );
-  const service = new Service(store, sync, credentials);
+  const aiCredentials = new Credentials(
+    join(dir, "credentials-openai.enc"),
+    safeStorage,
+  );
+  const service = new Service(store, sync, credentials, aiCredentials);
   const renderer = join(here, "../renderer/index.html"),
     dev = process.env.ELECTRON_RENDERER_URL;
   const trusted = (url: string) =>

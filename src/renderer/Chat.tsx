@@ -1,3 +1,4 @@
+import { CloudComposer } from "./CloudComposer";
 import { useState } from "react";
 import {
   Plus,
@@ -35,7 +36,13 @@ export function Chat() {
         eyebrow="THINK WITH YOUR SOURCES"
         title="AI copilot"
         description="A persistent conversation workspace. The built-in assistant uses local, deterministic evidence."
-        actions={<Badge tone="green">No external model connected</Badge>}
+        actions={
+          <Badge tone="green">
+            {s.ai?.configured
+              ? "OpenAI optional · local mode ready"
+              : "No external model connected"}
+          </Badge>
+        }
       />
       <div className="chat-layout panel">
         <aside className="chat-sidebar">
@@ -93,7 +100,8 @@ export function Chat() {
             <b>Useful without an API key</b>
             <p>
               Select evidence for a structured local summary. This assistant
-              does not generate model responses or send data off-device.
+              stays on-device. Optional OpenAI mode requires a separate evidence
+              preview and consent.
             </p>
           </div>
         </aside>
@@ -178,7 +186,31 @@ export function Chat() {
                       </Badge>
                       <small>{date(m.at)}</small>
                     </div>
+                    {m.origin === "model" && (
+                      <p className="footnote">
+                        OpenAI · {m.model} · {m.totalTokens ?? "unknown"} total
+                        tokens · citation IDs checked, claims unverified
+                      </p>
+                    )}
                     <Markdown>{m.text}</Markdown>
+                    {m.evidence && (
+                      <details>
+                        <summary>
+                          Supplied evidence ({m.evidence.length} passages)
+                        </summary>
+                        {m.evidence.map((c) => (
+                          <details key={c.id}>
+                            <summary>
+                              {c.id} · {c.title}
+                            </summary>
+                            <p>
+                              {c.provenance} · observed {c.observedAt} · {c.url}
+                            </p>
+                            <pre className="evidence-preview">{c.text}</pre>
+                          </details>
+                        ))}
+                      </details>
+                    )}
                     {m.sources.length > 0 && (
                       <div className="message-sources">
                         {m.sources.map((id) => (
@@ -186,7 +218,16 @@ export function Chat() {
                             key={id}
                             onClick={() => {
                               if (s.items.some((i) => i.id === id)) select(id);
-                              else openSource(id);
+                              else if (s.sources.some((x) => x.id === id))
+                                openSource(id);
+                              else
+                                useApp
+                                  .getState()
+                                  .navigate(
+                                    s.tasks.some((t) => t.id === id)
+                                      ? "My Journey"
+                                      : "Repositories",
+                                  );
                             }}
                           >
                             {s.sources.find((x) => x.id === id)?.title ?? id}
@@ -224,6 +265,18 @@ export function Chat() {
                       <b>Selected local context · nothing is uploaded</b>
                       {[
                         ...s.items.map((i) => ({ id: i.id, title: i.title })),
+                        ...s.repositories.map((r) => ({
+                          id: r.id,
+                          title: `Repository: ${r.name}`,
+                        })),
+                        ...s.tasks.map((t) => ({
+                          id: t.id,
+                          title: `Plan: ${t.title}`,
+                        })),
+                        ...s.changes.map((c) => ({
+                          id: c.id,
+                          title: `Change: ${c.title}`,
+                        })),
                         ...s.sources.map((i) => ({ id: i.id, title: i.title })),
                       ].map((x) => (
                         <label className="check-label" key={x.id}>
@@ -266,6 +319,12 @@ export function Chat() {
                       Send
                     </Button>
                   </div>
+                  <CloudComposer
+                    id={chat.id}
+                    question={text}
+                    sources={sources}
+                    onSent={() => setText("")}
+                  />
                 </form>
               )}
               {chat.demo && (

@@ -1,3 +1,4 @@
+import { models } from "./ai";
 import { z } from "zod";
 const text = z.string().max(10000),
   id = z.string().min(1).max(300);
@@ -105,6 +106,32 @@ export const actionSchema = z.discriminatedUnion("type", [
     persist: z.boolean(),
   }),
   z.object({ type: z.literal("credential:delete") }),
+  z.object({
+    type: z.literal("ai:key"),
+    token: z.string().trim().min(1).max(500),
+    persist: z.boolean(),
+  }),
+  z.object({ type: z.literal("ai:delete") }),
+  z.object({
+    type: z.literal("ai:configure"),
+    config: z.object({
+      model: z.enum(models),
+      dailyLimit: z.number().int().min(1).max(50),
+      outputTokens: z.number().int().min(256).max(2000),
+    }),
+  }),
+  z.object({
+    type: z.literal("chat:preview"),
+    id,
+    text: z.string().trim().min(1).max(2000),
+    sources: z.array(id).min(1).max(30),
+  }),
+  z.object({
+    type: z.literal("chat:cloud"),
+    id,
+    previewId: id,
+    consent: z.literal(true),
+  }),
   z.object({ type: z.literal("external"), url: z.string().url().max(2000) }),
   z.object({
     type: z.literal("export"),

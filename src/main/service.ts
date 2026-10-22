@@ -1,3 +1,5 @@
+import type { CloudPreview, ActionResult } from "../shared/ai";
+import { OpenAIProvider } from "./ai/provider";
 import { randomUUID } from "node:crypto";
 import type { Action, Snapshot, Source } from "../shared/types";
 import { parseRepo, externalUrl } from "../shared/schemas";
@@ -9,11 +11,23 @@ import { seedDemo } from "./demo";
 import { feedbackId } from "../shared/review";
 import { rank } from "../shared/ranking";
 export class Service {
+  private previews = new Map<
+    string,
+    { preview: CloudPreview; selected: string[] }
+  >();
+  private cloudActive = new Set<string>();
+  private provider: OpenAIProvider;
+
   constructor(
     public store: Store,
     public sync: SyncService,
     public credentials: Credentials,
-  ) {}
+    private aiCredentials?: Credentials,
+    provider?: OpenAIProvider,
+  ) {
+    this.provider =
+      provider ?? new OpenAIProvider(() => this.aiCredentials?.get());
+  }
   snapshot(query = ""): Snapshot {
     const profile = this.store.profile();
     const repositories = this.store
@@ -38,6 +52,12 @@ export class Service {
         .slice(0, 100),
       syncing: [...this.sync.active.keys()],
       credential: this.credentials.status(),
+      ai: {
+        configured: !!this.aiCredentials?.status().present,
+        persistent: !!this.aiCredentials?.status().persistent,
+        config: this.store.aiConfig(),
+        callsToday: this.store.callsToday(),
+      },
       ...(query ? { search: this.store.search(query) } : {}),
     };
   }
@@ -90,7 +110,7 @@ export class Service {
         });
     })();
   }
-  async act(a: Action): Promise<{ message?: string }> {
+  async act(a: Action): Promise<ActionResult> {
     switch (a.type) {
       case "profile":
         this.store.setProfile(a.value);
@@ -317,6 +337,139 @@ export class Service {
           },
         ]);
         break;
+      }
+      case "ai:key":
+        if (!this.aiCredentials)
+          throw new Error("AI credential storage is unavailable.");
+        this.aiCredentials.set(a.token, a.persist);
+        this.previews.clear();
+        return {
+          message: a.persist
+            ? "OpenAI key saved with OS encryption. No request has been sent."
+            : "OpenAI key saved for this session. No request has been sent.",
+        };
+      case "ai:delete":
+        this.aiCredentials?.clear();
+        this.previews.clear();
+        break;
+      case "ai:configure":
+        this.store.setAIConfig(a.config);
+        this.previews.clear();
+        break;
+      case "chat:preview": {
+        const c = this.store.get("conversations", a.id);
+        if (!c || c.demo) throw new Error("Choose a real local conversation.");
+        const s = this.snapshot();
+        const visible = new Set(
+          [
+            ...s.items,
+            ...s.sources,
+            ...s.repositories,
+            ...s.tasks,
+            ...s.changes,
+          ].map((r) => r.id),
+        );
+        if (a.sources.some((id) => !visible.has(id)))
+          throw new Error(
+            "Selected evidence is no longer visible. Select it again.",
+          );
+        const chunks = this.store.retrieve(a.text, [...new Set(a.sources)]);
+        if (!chunks.length)
+          throw new Error(
+            "Insufficient selected evidence. Add synchronized records or use local mode.",
+          );
+        const config = this.store.aiConfig();
+        const preview: CloudPreview = {
+          id: randomUUID(),
+          conversationId: a.id,
+          question: a.text,
+          model: config.model,
+          outputTokens: config.outputTokens,
+          chunks,
+          expiresAt: new Date(Date.now() + 300000).toISOString(),
+        };
+        this.previews.clear();
+        this.previews.set(preview.id, { preview, selected: a.sources });
+        return { preview };
+      }
+      case "chat:cloud": {
+        if (a.consent !== true)
+          throw new Error("Explicit cloud-processing consent is required.");
+        if (!this.aiCredentials?.get())
+          throw new Error("Configure an OpenAI key or use local mode.");
+        const entry = this.previews.get(a.previewId);
+        if (
+          !entry ||
+          entry.preview.conversationId !== a.id ||
+          Date.parse(entry.preview.expiresAt) < Date.now()
+        )
+          throw new Error(
+            "Preview expired. Preview the evidence again before sending.",
+          );
+        if (this.cloudActive.has(a.id))
+          throw new Error(
+            "An OpenAI request is already running for this conversation.",
+          );
+        const c = this.store.get("conversations", a.id);
+        if (!c || c.demo) throw new Error("Choose a real local conversation.");
+        const s = this.snapshot();
+        const visible = new Set(
+          [
+            ...s.items,
+            ...s.sources,
+            ...s.repositories,
+            ...s.tasks,
+            ...s.changes,
+          ].map((r) => r.id),
+        );
+        if (
+          entry.selected.some((id) => !visible.has(id)) ||
+          JSON.stringify(
+            this.store.retrieve(entry.preview.question, entry.selected),
+          ) !== JSON.stringify(entry.preview.chunks)
+        )
+          throw new Error("Evidence changed. Preview it again before sending.");
+        this.store.reserveCall();
+        this.previews.delete(a.previewId);
+        this.cloudActive.add(a.id);
+        try {
+          const answer = await this.provider.answer(entry.preview);
+          // Deleting a conversation while a request runs must not resurrect it.
+          if (!this.store.get("conversations", a.id))
+            throw new Error(
+              "Conversation was deleted while the request was running.",
+            );
+          const at = new Date().toISOString(),
+            sources = [...new Set(entry.preview.chunks.map((c) => c.recordId))];
+          this.store.appendChat(a.id, [
+            {
+              id: randomUUID(),
+              role: "user",
+              text: entry.preview.question,
+              at,
+              origin: "user",
+              sources,
+            },
+            {
+              id: randomUUID(),
+              role: "assistant",
+              text: answer.text,
+              at,
+              origin: "model",
+              sources,
+              model: answer.model,
+              totalTokens: answer.usage,
+              abstained: answer.abstained,
+              evidence: entry.preview.chunks,
+            },
+          ]);
+          return {
+            message:
+              "Model response saved. Citation IDs were checked; factual correctness still needs review.",
+          };
+        } finally {
+          this.cloudActive.delete(a.id);
+        }
       }
       case "credential:set":
         this.credentials.set(a.token, a.persist);

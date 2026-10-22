@@ -1,3 +1,9 @@
+import { chunksFor, evidenceTables } from "../ai/evidence";
+import {
+  defaultAIConfig,
+  type AIConfig,
+  type EvidenceChunk,
+} from "../../shared/ai";
 import Database from "better-sqlite3";
 import { randomUUID } from "node:crypto";
 import type {
@@ -81,6 +87,88 @@ export class Store {
           .prepare("INSERT INTO migrations VALUES(3,?)")
           .run(new Date().toISOString());
       })();
+    if (!this.db.prepare("SELECT 1 FROM migrations WHERE version=4").get())
+      this.db.transaction(() => {
+        this.db.exec(
+          "CREATE VIRTUAL TABLE evidence USING fts5(id UNINDEXED, record_id UNINDEXED, text, metadata UNINDEXED, tokenize='unicode61');",
+        );
+        for (const table of evidenceTables)
+          for (const record of this.all(table))
+            this.indexEvidence(table, record);
+        this.db
+          .prepare("INSERT INTO migrations VALUES(4,?)")
+          .run(new Date().toISOString());
+      })();
+  }
+  private indexEvidence(table: string, record: { id: string }) {
+    if (!(evidenceTables as readonly string[]).includes(table)) return;
+    this.db.prepare("DELETE FROM evidence WHERE record_id=?").run(record.id);
+    const insert = this.db.prepare("INSERT INTO evidence VALUES(?,?,?,?)");
+    for (const chunk of chunksFor(table, record))
+      insert.run(chunk.id, record.id, chunk.text, JSON.stringify(chunk));
+  }
+  retrieve(question: string, ids: string[]): EvidenceChunk[] {
+    if (!ids.length) return [];
+    const placeholders = ids.map(() => "?").join(",");
+    const terms = question.match(/[\p{L}\p{N}_]+/gu)?.slice(0, 12) ?? [];
+    const matches = terms.length
+      ? (this.db
+          .prepare(
+            `SELECT metadata FROM evidence WHERE evidence MATCH ? AND record_id IN (${placeholders}) ORDER BY rank LIMIT 8`,
+          )
+          .all(terms.map((t) => '"' + t + '"').join(" OR "), ...ids) as {
+          metadata: string;
+        }[])
+      : [];
+    if (matches.length) return matches.map((r) => JSON.parse(r.metadata));
+    // With no lexical matches, show one opening passage per selected record.
+    return ids.slice(0, 8).flatMap((id) => {
+      const row = this.db
+        .prepare(
+          "SELECT metadata FROM evidence WHERE record_id=? ORDER BY rowid LIMIT 1",
+        )
+        .get(id) as { metadata: string } | undefined;
+      return row ? [JSON.parse(row.metadata)] : [];
+    });
+  }
+  aiConfig(): AIConfig {
+    const row = this.db
+      .prepare("SELECT value FROM settings WHERE key='ai_config'")
+      .get() as { value: string } | undefined;
+    return row
+      ? { ...defaultAIConfig, ...JSON.parse(row.value) }
+      : { ...defaultAIConfig };
+  }
+  setAIConfig(config: AIConfig) {
+    this.db
+      .prepare(
+        "INSERT INTO settings VALUES('ai_config',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+      )
+      .run(JSON.stringify(config));
+  }
+  callsToday() {
+    const row = this.db
+      .prepare("SELECT value FROM settings WHERE key=?")
+      .get("ai_usage:" + new Date().toISOString().slice(0, 10)) as
+      { value: string } | undefined;
+    return row ? Number(row.value) : 0;
+  }
+  reserveCall() {
+    this.db.transaction(() => {
+      const calls = this.callsToday();
+      if (calls >= this.aiConfig().dailyLimit)
+        throw new Error(
+          "Local daily OpenAI request limit reached. Use local mode.",
+        );
+      this.db
+        .prepare(
+          "INSERT INTO settings VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+        )
+        .run(
+          "ai_usage:" + new Date().toISOString().slice(0, 10),
+          String(calls + 1),
+        );
+    })();
   }
 
   all<K extends keyof Tables>(table: K): Tables[K][] {
@@ -112,6 +200,7 @@ export class Store {
             `INSERT INTO ${table}(id,data) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data`,
           )
           .run(record.id, JSON.stringify(record));
+      this.indexEvidence(table, record);
       this.db
         .prepare("DELETE FROM search WHERE id=? AND kind=?")
         .run(record.id, table);
@@ -130,6 +219,8 @@ export class Store {
         this.db.prepare("DELETE FROM http_cache WHERE repo=?").run(id);
       }
       this.db.prepare(`DELETE FROM ${table} WHERE id=?`).run(id);
+      if ((evidenceTables as readonly string[]).includes(table))
+        this.db.prepare("DELETE FROM evidence WHERE record_id=?").run(id);
       this.db
         .prepare("DELETE FROM search WHERE id=? AND kind=?")
         .run(id, table);

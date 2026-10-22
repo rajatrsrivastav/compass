@@ -1,3 +1,4 @@
+import type { AIConfig, AIStatus, EvidenceChunk, ActionResult } from "./ai";
 export type Provenance = "github" | "manual" | "import" | "demo";
 export type ReviewState =
   | "Not reviewed"
@@ -153,6 +154,10 @@ export interface Message {
   text: string;
   at: string;
   origin: "user" | "deterministic" | "model" | "demo";
+  model?: string;
+  totalTokens?: number;
+  evidence?: EvidenceChunk[];
+  abstained?: boolean;
   sources: string[];
 }
 export interface Change {
@@ -175,6 +180,7 @@ export interface Snapshot {
   changes: Change[];
   syncing: string[];
   credential: { present: boolean; persistent: boolean };
+  ai?: AIStatus;
   search?: string[];
 }
 export interface Opportunity {
@@ -228,9 +234,14 @@ export type Action =
   | { type: "chat:send"; id: string; text: string; sources: string[] }
   | { type: "credential:set"; token: string; persist: boolean }
   | { type: "credential:delete" }
+  | { type: "ai:key"; token: string; persist: boolean }
+  | { type: "ai:delete" }
+  | { type: "ai:configure"; config: AIConfig }
+  | { type: "chat:preview"; id: string; text: string; sources: string[] }
+  | { type: "chat:cloud"; id: string; previewId: string; consent: true }
   | { type: "external"; url: string }
   | { type: "export"; kind: "journey" | "chat"; id?: string };
 export interface Bridge {
   snapshot: (query?: string) => Promise<Snapshot>;
-  act: (action: Action) => Promise<{ message?: string }>;
+  act: (action: Action) => Promise<ActionResult>;
 }
