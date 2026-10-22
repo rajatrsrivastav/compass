@@ -1,0 +1,36 @@
+# Post-Codex audit
+
+Auditor: Codex, in the actual continuation session beginning 2026-10-22. This is not a Claude or Devin report. Baseline: `e68c6b7627889772f1158f600749da22494c04ad` (`v0.1.0`). Clean branch `codex/oss-compass`; no Git remote. Existing architecture, journal, migrations, UI actions, service implementations, tests and course records inspected. The separately mentioned OpenSource Copilot research report was not present; the supplied brief provides the requirements.
+
+## Baseline verification
+
+`npm ci` succeeded (542 packages); typecheck and lint passed. Unit/integration: 32 passed, one opt-in live test skipped. Production build passed. The first desktop E2E attempt was blocked by the process sandbox (macOS Electron launch SIGABRT/EPERM); it does not establish a product regression. A permitted unsandboxed rerun is recorded below when complete. Eight moderate development dependency advisories were reported; no dependency change made during baseline.
+
+## Feature and risk audit at baseline
+
+| Feature / implementation | Status and evidence | Verified defect or gap | Recommendation / priority / risk |
+|---|---|---|---|
+| Electron main/preload boundary (`src/main/index.ts`, `src/preload/index.ts`, `shared/schemas.ts`) | Implemented: two IPC methods, sender/frame validation, sandbox/isolation, Zod actions, external HTTPS only; hygiene and E2E coverage | No verified boundary escape | Preserve; regression checks / P1 / low |
+| Profile/settings (`renderer/Settings.tsx`, `Store.profile`) | Implemented and persisted; E2E pending-edit/restart coverage | None verified | Preserve / P2 / low |
+| SQLite migrations/FTS (`main/database/store.ts`) | Migrations 1–2, transactions, literal token search, cascade tests | Cache deletion uses SQL LIKE with wildcard repository names; source/event deletion spans transactions | Literal cache scope + transactional deletion / P1 / medium |
+| GitHub sync (`main/github/client.ts`, `sync.ts`) | Read-only GET, ETags, paging, retries, cancel, conservative checkpoint, bounded enrichment; 12 unit cases | Private metadata can reach HTTP cache before rejection; pagination has no cycle guard; retained detail has no freshness metadata | Guard cache, cap pages, track detail observation / P1 / medium |
+| Credentials (`main/security/credentials.ts`) | OS-backed safeStorage or session-only; ciphertext tests | `clear()` precedes encryption/write: failed replacement destroys working credential | Atomic replacement and failure regression / P1 / medium |
+| Opportunity Radar (`shared/ranking.ts`, `renderer/Issues.tsx`) | Transparent deterministic weights and linked sources | Closing-keyword-only matching; bare-number and regex metacharacter ambiguity; no previous-attempt/coverage status | Shared explicit-reference index + Before You Start / P1 / medium |
+| Repository guidance (`renderer/Repositories.tsx`, sync) | README/CONTRIBUTING/CoC at root | No organization briefing, policy location coverage or absence timestamps; old guidance retained after 404 | Bounded root/.github/docs discovery with evidence links / P1 / medium |
+| PR private workflow (`renderer/Detail.tsx`, `Store.saveItem`) | States and notes survive sync | No last inspected head, feedback snapshot or persistent history | Explicit inspection checkpoint/history and cautious delta UI / P1 / medium |
+| Community import (`main/imports/parse.ts`, renderer/Community) | Manual, text, VTT/SRT, authorized Slack JSON; references and FTS | Null/invalid JSON rows and out-of-range timestamps cause unhelpful runtime errors; linked source navigation does not select source | Validate shapes/dates; route exact source / P1 / low |
+| Conversations (`main/service.ts`, renderer/Chat) | Persistent deterministic selected-source summaries; demo separation; restart tested | Chat ranks one issue in isolation and misses related PRs | Use full cached work context with citations / P1 / low |
+| Optional model | Not implemented, truthfully labeled | No provider, retrieval chunks, cloud consent or model tests | M5 only after stable priority work / P2 / medium |
+| Accessibility (`renderer/Detail.tsx`, main, styles) | Labels, focus styling, headings and status messages exist | Drawer has no focus containment/entry/restore; reduced motion missing | Native modal semantics and keyboard E2E / P1 / low |
+| Performance | 3-second whole snapshot polling and repeated ranking scans observed in code | Cost not yet measured; no speed claim supported | Repeatable cache workload; only optimize measured issues / P2 / medium |
+| Course/export/package | Actual historical commits, native export, unsigned arm64 package and prior smoke recorded | New audit/Devin evidence missing | Preserve history and append genuine results / P1 / low |
+
+## Scope and attribution
+
+No main-service replacement, framework migration, GitHub write API, mandatory chat connector, autonomous posting, or rewritten history is planned. All local changes are Codex work. Devin availability and execution evidence are tracked separately in DEVIN_SCAN_REPORT.md. Findings above are local review findings, not scanner output. New tests must distinguish confirmed defects from hypotheses.
+
+## Milestone results
+
+Results and exact commands will be appended as each milestone completes. Optional external work must not be reported as executed without evidence.
+
+M0 completed: permitted `npx playwright test` rerun passed both Electron tests (32.6 s), including restart persistence, native import/export and runtime isolation checks. Baseline production build passed as part of `npm run test:e2e`. No live API rerun yet in this audit; historical live evidence is not counted as a new result.
