@@ -95,6 +95,8 @@ export class SyncService {
           item.comments = old.comments;
           item.reviews = old.reviews;
           item.checks = old.checks;
+          item.checksHeadSha = old.checksHeadSha;
+          item.checksObservedAt = old.checksObservedAt;
           item.commentsObservedAt = old.commentsObservedAt;
           item.commentsComplete = old.commentsComplete;
           item.reviewsObservedAt = old.reviewsObservedAt;
@@ -148,6 +150,8 @@ export class SyncService {
                   `/repos/${id}/commits/${raw.head.sha}/check-runs?per_page=100`,
                   signal,
                 );
+                item.checksHeadSha = raw.head.sha;
+                item.checksObservedAt = new Date().toISOString();
                 item.checks =
                   checks.data.check_runs
                     ?.map((c: any) => `${c.name}: ${c.conclusion ?? c.status}`)

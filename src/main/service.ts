@@ -6,6 +6,7 @@ import { SyncService } from "./github/sync";
 import { Credentials } from "./security/credentials";
 import { parseImport, extractReferences, candidates } from "./imports/parse";
 import { seedDemo } from "./demo";
+import { feedbackId } from "../shared/review";
 import { rank } from "../shared/ranking";
 export class Service {
   constructor(
@@ -138,10 +139,44 @@ export class Service {
         this.store.put("items", {
           ...item,
           ...(a.saved !== undefined ? { saved: a.saved } : {}),
-          ...(a.note !== undefined ? { note: a.note } : {}),
+          ...(a.note !== undefined
+            ? { note: a.note, noteHeadSha: item.headSha ?? null }
+            : {}),
           ...(a.reviewState ? { reviewState: a.reviewState } : {}),
         });
         break;
+      }
+      case "item:inspect": {
+        const item = this.store.get("items", a.id);
+        if (!item || item.kind !== "pr")
+          throw new Error("Select a cached pull request.");
+        const inspection = {
+          id: randomUUID(),
+          inspectedAt: new Date().toISOString(),
+          headSha: item.headSha ?? null,
+          itemUpdatedAt: item.updatedAt,
+          commentsObservedAt: item.commentsObservedAt ?? null,
+          reviewsObservedAt: item.reviewsObservedAt ?? null,
+          commentsComplete: item.commentsComplete ?? false,
+          reviewsComplete: item.reviewsComplete ?? false,
+          feedbackIds: [...item.comments, ...item.reviews].map(feedbackId),
+          reviews: item.reviews.map((r) => ({
+            author: r.author,
+            state: r.state ?? "COMMENT",
+            at: r.at,
+            url: r.url,
+          })),
+          privateState: item.reviewState,
+          note: item.note,
+        };
+        this.store.put("items", {
+          ...item,
+          inspections: [...(item.inspections ?? []), inspection],
+        });
+        return {
+          message:
+            "Private inspection recorded against the available cached evidence.",
+        };
       }
       case "source:add":
         this.addSource(a);

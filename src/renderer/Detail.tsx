@@ -1,3 +1,4 @@
+import { ReviewMemory } from "./ReviewMemory";
 import { BeforeStart } from "./BeforeStart";
 import { useEffect, useState, useRef } from "react";
 import { X, Bookmark, ExternalLink, FileText, CheckCheck } from "lucide-react";
@@ -164,6 +165,12 @@ export function Detail() {
             </p>
             <h3>Available checks</h3>
             <p>{item.checks}</p>
+            <p className="muted">
+              Checks observed {date(item.checksObservedAt ?? null)}.{" "}
+              {item.headSha && item.checksHeadSha === item.headSha
+                ? "For the cached head commit."
+                : "Not verified for the current cached head; recheck on GitHub."}
+            </p>
             {item.provenance !== "demo" && (
               <OpenButton
                 url={`${item.url}/files`}
@@ -172,6 +179,7 @@ export function Detail() {
             )}
           </section>
         )}
+        {item.kind === "pr" && <ReviewMemory item={item} />}
         <section>
           <h2>Investigation notes</h2>
           <textarea

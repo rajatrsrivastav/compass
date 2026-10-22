@@ -40,11 +40,17 @@ test("complete offline contribution workflow survives a desktop restart", async 
       .click();
     const details = page.getByRole("dialog", { name: "Item details" });
     await expect(details).toBeVisible();
-    await expect(page.getByText("BEFORE YOU START", {exact:true})).toBeVisible();
-    await expect(page.getByRole("button", { name: "Close details" })).toBeFocused();
+    await expect(
+      page.getByText("BEFORE YOU START", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Close details" }),
+    ).toBeFocused();
     for (let tab = 0; tab < 8; tab++) {
       await page.keyboard.press("Tab");
-      expect(await details.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+      expect(
+        await details.evaluate((el) => el.contains(document.activeElement)),
+      ).toBe(true);
     }
     await page
       .getByLabel("Investigation notes")
@@ -60,6 +66,12 @@ test("complete offline contribution workflow survives a desktop restart", async 
       })
       .click();
     await page.getByLabel("My review state").selectOption("Needs follow-up");
+    await page
+      .getByRole("button", { name: "Record inspection", exact: true })
+      .click();
+    await expect(
+      page.getByText("Inspection history (1)", { exact: true }),
+    ).toBeVisible();
     await page.getByRole("button", { name: "Close details" }).click();
     await page
       .getByRole("button", { name: "Community Context", exact: true })
@@ -166,6 +178,21 @@ test("complete offline contribution workflow survives a desktop restart", async 
       "Measure frame times before proposing an optimization.",
     );
     await page.getByRole("button", { name: "Close details" }).click();
+    await page
+      .getByRole("button", { name: "PR Review Queue", exact: true })
+      .click();
+    await page
+      .getByRole("heading", {
+        name: "Add regression coverage for keyboard navigation",
+      })
+      .click();
+    await expect(page.getByLabel("My review state")).toHaveValue(
+      "Needs follow-up",
+    );
+    await expect(
+      page.getByText("Inspection history (1)", { exact: true }),
+    ).toBeVisible();
+    await page.keyboard.press("Escape");
     await page.getByRole("button", { name: "AI Copilot", exact: true }).click();
     await page
       .getByRole("button", { name: /My real local conversation/ })

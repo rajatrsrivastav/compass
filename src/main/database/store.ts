@@ -166,12 +166,15 @@ export class Store {
       saved: old?.saved ?? false,
       note: old?.note ?? "",
       reviewState: old?.reviewState ?? "Not reviewed",
+      noteHeadSha: old?.noteHeadSha,
+      inspections: old?.inspections,
     });
     if (
       !baseline &&
       (!old ||
         old.updatedAt !== item.updatedAt ||
         old.state !== item.state ||
+        old.headSha !== item.headSha ||
         JSON.stringify(old.reviews) !== JSON.stringify(item.reviews))
     ) {
       this.put("changes", {

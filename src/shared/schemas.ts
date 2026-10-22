@@ -23,6 +23,7 @@ export const actionSchema = z.discriminatedUnion("type", [
     "source:delete",
     "task:delete",
     "chat:delete",
+    "item:inspect",
   ].map((type) => z.object({ type: z.literal(type), id })),
   z.object({ type: z.literal("demo:seed") }),
   z.object({

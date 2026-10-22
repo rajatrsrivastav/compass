@@ -48,6 +48,20 @@ export interface Repository {
   remaining: number | null;
   briefing?: Briefing;
 }
+export interface Inspection {
+  id: string;
+  inspectedAt: string;
+  headSha: string | null;
+  itemUpdatedAt: string;
+  commentsObservedAt: string | null;
+  reviewsObservedAt: string | null;
+  commentsComplete: boolean;
+  reviewsComplete: boolean;
+  feedbackIds: string[];
+  reviews: { author: string; state: string; at: string; url: string }[];
+  privateState: ReviewState;
+  note: string;
+}
 export interface Item {
   id: string;
   repo: string;
@@ -71,10 +85,14 @@ export interface Item {
   comments: Comment[];
   reviews: Comment[];
   checks: string;
+  checksHeadSha?: string;
+  checksObservedAt?: string;
   provenance: Provenance;
   saved: boolean;
   reviewState: ReviewState;
   note: string;
+  noteHeadSha?: string | null;
+  inspections?: Inspection[];
 }
 export interface Comment {
   author: string;
@@ -192,6 +210,7 @@ export type Action =
       url: string;
       consent: boolean;
     }
+  | { type: "item:inspect"; id: string }
   | { type: "source:import"; repo: string; consent: boolean }
   | { type: "source:delete"; id: string }
   | {

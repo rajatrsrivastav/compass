@@ -100,6 +100,7 @@ export function seedDemo(store: Store) {
       provenance: "demo",
       saved: false,
       reviewState: "Not reviewed",
+      headSha: kind === "pr" ? "demo-head-001" : undefined,
       note: "",
     };
     if (!store.get("items", item.id)) store.put("items", item);
