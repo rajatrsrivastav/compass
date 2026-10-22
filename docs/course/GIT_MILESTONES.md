@@ -129,3 +129,52 @@ tests/unit/github.test.ts
 tests/unit/hygiene.test.ts
 ```
 
+## build: package unsigned desktop app and document verified course delivery
+
+- Commit: `2bdd32491afc7c80df1186e31411873a95538179`
+- Actual author date: 2026-10-22T23:12:02+05:30
+- Milestone: build: package unsigned desktop app and document verified course delivery
+- Recorded validation: see [development journal](../development-journal/2026-10-22.md).
+
+Files:
+
+```text
+.github/workflows/verify.yml
+ARCHITECTURE.md
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE
+README.md
+SECURITY.md
+SETUP.md
+TESTING.md
+docs/ai/AI_USAGE_DISCLOSURE.md
+docs/ai/DEMO_CHAT_HISTORY.md
+docs/ai/DEVELOPMENT_SESSIONS.md
+docs/ai/PROMPT_HISTORY.md
+docs/ai/SYSTEM_PROMPT.md
+docs/architecture/DATABASE.md
+docs/architecture/RANKING.md
+docs/course/BUILD_ARTIFACTS.md
+docs/course/DEMO_WALKTHROUGH.md
+docs/course/DEVELOPMENT_TIMELINE.md
+docs/course/ELECTRON_ARCHITECTURE.md
+docs/course/FEATURE_IMPLEMENTATION.md
+docs/course/GIT_MILESTONES.md
+docs/course/KNOWN_LIMITATIONS.md
+docs/course/PROJECT_OVERVIEW.md
+docs/course/REQUIREMENTS.md
+docs/course/TESTING_REPORT.md
+docs/development-journal/2026-10-22.md
+docs/screenshots/community.png
+docs/screenshots/copilot-light.png
+docs/screenshots/copilot.png
+docs/screenshots/overview-dark.png
+electron-builder.yml
+playwright.config.ts
+scripts/history.mjs
+scripts/smoke-packaged.mjs
+tests/e2e/exports.spec.ts
+vitest.config.ts
+```
+
