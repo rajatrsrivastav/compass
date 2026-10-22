@@ -1,0 +1,13 @@
+{
+  "name": "oss-compass", "version": "0.1.0", "description": "A local-first open source contribution workspace",
+  "main": "out/main/index.js", "author": "OSS Compass contributors", "license": "MIT", "type": "module",
+  "scripts": {
+    "dev": "electron-vite dev", "start": "electron-vite preview", "build": "npm run typecheck && electron-vite build",
+    "typecheck": "tsc --noEmit", "lint": "eslint .", "format": "prettier --write src tests *.json *.ts",
+    "test": "npm run native:node && vitest run", "test:e2e": "npm run build && npm run native:electron && playwright test",
+    "native:node": "npm rebuild better-sqlite3", "native:electron": "electron-builder install-app-deps",
+    "postinstall": "electron-builder install-app-deps", "package": "npm run build && electron-builder --dir",
+    "package:win": "npm run build && electron-builder --win nsis --x64", "package:mac": "npm run build && electron-builder --mac zip",
+    "history": "node scripts/history.mjs"
+  }
+}
