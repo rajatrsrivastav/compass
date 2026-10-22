@@ -1,0 +1,7 @@
+WEBVTT
+
+00:00:10.000 --> 00:00:25.000
+Synthetic demo meeting: investigate compass-demo/canvas-lab#42 before proposing performance changes.
+
+00:00:25.000 --> 00:00:40.000
+Action: measure redraw costs and document the reproduction steps.
