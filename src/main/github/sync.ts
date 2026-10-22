@@ -97,6 +97,15 @@ export class SyncService {
       }
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
+        // Reserve the last requests for core metadata on other tracked repositories.
+        if (this.client.remaining !== null && this.client.remaining <= 8) {
+          partial = true;
+          enrichmentStopped = true;
+          warnings.push(
+            "Core items synchronized. Discussion enrichment deferred because the GitHub API allowance is low.",
+          );
+          break;
+        }
         if (i >= 12) {
           partial = true;
           continue;
@@ -167,6 +176,13 @@ export class SyncService {
         "CODE_OF_CONDUCT.md",
       ]) {
         if (enrichmentStopped) break;
+        if (this.client.remaining !== null && this.client.remaining <= 8) {
+          partial = true;
+          warnings.push(
+            "Contributor guidance deferred because the GitHub API allowance is low.",
+          );
+          break;
+        }
         try {
           const r = await this.client.request<any>(
             `/repos/${id}/contents/${file}`,

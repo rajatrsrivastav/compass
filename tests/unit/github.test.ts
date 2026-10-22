@@ -155,14 +155,12 @@ it("follows repository redirects only within the approved GitHub API", async () 
   expect(fetcher).toHaveBeenCalledTimes(2);
 });
 it("does not forward credentials to a redirect outside GitHub", async () => {
-  const fetcher = vi
-    .fn()
-    .mockResolvedValue(
-      new Response("", {
-        status: 301,
-        headers: { location: "https://example.com/repos/a/b" },
-      }),
-    );
+  const fetcher = vi.fn().mockResolvedValue(
+    new Response("", {
+      status: 301,
+      headers: { location: "https://example.com/repos/a/b" },
+    }),
+  );
   const { client } = setup(fetcher);
   await expect(client.request("/repos/a/b")).rejects.toThrow("Unapproved");
   expect(
@@ -223,4 +221,41 @@ it("retains core items when enrichment hits the rate limit and does not advance 
     "enrichment stopped",
   );
   expect(store.db.prepare("SELECT * FROM sync_checkpoints").all()).toEqual([]);
+});
+it("reserves low API allowance for core repository data", async () => {
+  const row = {
+    number: 1,
+    title: "Issue",
+    state: "open",
+    created_at: "2026-01-01",
+    updated_at: "2026-01-01",
+  };
+  const fetcher = vi.fn(async (input: any) => {
+    const path = new URL(input).pathname;
+    const body = path.endsWith("/issues")
+      ? [row]
+      : path.endsWith("/pulls")
+        ? []
+        : { private: false };
+    return Response.json(body, { headers: { "x-ratelimit-remaining": "7" } });
+  });
+  const { store, client } = setup(fetcher);
+  store.put("repositories", {
+    id: "a/b",
+    name: "a/b",
+    description: "",
+    language: "",
+    stars: 0,
+    provenance: "github",
+    syncedAt: null,
+    error: null,
+    partial: false,
+    guidance: {},
+    remaining: null,
+  });
+  await new SyncService(store, client).sync("a/b");
+  expect(store.all("items")).toHaveLength(1);
+  expect(fetcher).toHaveBeenCalledTimes(3);
+  expect(store.get("repositories", "a/b")?.error).toContain("allowance is low");
+  expect(store.get("repositories", "a/b")?.partial).toBe(true);
 });

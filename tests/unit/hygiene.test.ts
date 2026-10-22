@@ -1,6 +1,6 @@
 import { it, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 it("ignores local secrets and runtime artifacts", () => {
   for (const path of [
     ".env.local",
@@ -22,4 +22,11 @@ it("keeps renderer isolated and preload narrow", () => {
   const preload = readFileSync("src/preload/index.ts", "utf8");
   expect(preload).not.toContain("sendSync");
   expect(preload).not.toContain("...ipcRenderer");
+});
+
+it("does not ignore the credential storage implementation", () => {
+  expect(
+    spawnSync("git", ["check-ignore", "src/main/security/credentials.ts"])
+      .status,
+  ).toBe(1);
 });
