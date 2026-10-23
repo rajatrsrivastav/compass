@@ -22,8 +22,6 @@ The submission build is **0.2.1**, packaged as `OSS-Compass-0.2.1-universal.dmg`
 
 Download the DMG from the [0.2.1 release](https://github.com/rajatrsrivastav/compass/releases/tag/v0.2.1). The [direct DMG download](https://github.com/rajatrsrivastav/compass/releases/download/v0.2.1/OSS-Compass-0.2.1-universal.dmg) is accompanied by [SHA256SUMS.txt](https://github.com/rajatrsrivastav/compass/releases/download/v0.2.1/SHA256SUMS.txt). The locally built file is also in `release/`. The **Verify OSS Compass** workflow builds a downloadable **OSS-Compass-macOS-universal-unsigned** artifact containing the DMG and `SHA256SUMS.txt`. Open the repository's **Actions** tab, select a successful run, download the artifact, and unzip it. GitHub artifact downloads require sign-in and expire after 90 days.
 
-If the repository is private, sign in to GitHub with repository access before downloading; your instructor also needs access to the source and release links.
-
 Open the DMG, drag **OSS Compass.app** onto **Applications**, eject the disk image, and launch the copied app. macOS may block this unsigned course build; if you trust its source, use the app-specific **Open Anyway** control in System Settings → Privacy & Security. See [Apple’s guidance](https://support.apple.com/en-au/102445); do not disable system security globally. Verify the file against its supplied SHA-256 checksum before installation.
 
 ## Development

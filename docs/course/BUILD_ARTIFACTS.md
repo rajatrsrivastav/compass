@@ -11,7 +11,7 @@
 - No Developer ID signing or notarization; linker ad-hoc signature only, no TeamIdentifier. Intel hardware, downloaded-file Gatekeeper flow, system installation and packaged Windows installer launch remain unverified.
 - Build artifacts are ignored by Git and uploaded separately. Rebuild with `npm ci` and `npm run package:mac`; verify with `node scripts/verify-dmg.mjs release/OSS-Compass-0.2.1-universal.dmg`. CI provides a separate artifact per successful macOS run; its bytes/checksum may differ from the local release.
 
-The published DMG was downloaded with authenticated GitHub access and compared byte-for-byte with the local image. [CI](https://github.com/rajatrsrivastav/compass/actions/runs/39987448617) separately passed macOS and Windows tests/packaging and uploaded both platform artifacts. Repository access is required while the repository is private.
+The published DMG was downloaded with authenticated GitHub access and compared byte-for-byte with the local image. [CI](https://github.com/rajatrsrivastav/compass/actions/runs/39987448617) separately passed macOS and Windows tests/packaging and uploaded both platform artifacts. The user approved public visibility; the direct download was subsequently verified with an unauthenticated HTTP 200 response.
 
 See [TESTING](../../TESTING.md) for actual commands, intermediate corrections and limits.
 
