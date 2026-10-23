@@ -6,7 +6,6 @@ import {
   Download,
   Trash2,
   Pencil,
-  Sparkles,
   Search,
   Paperclip,
 } from "lucide-react";
@@ -19,6 +18,8 @@ export function Chat() {
     [text, setText] = useState(""),
     [query, setQuery] = useState(""),
     [sources, setSources] = useState<string[]>([]),
+    [contextQuery, setContextQuery] = useState(""),
+    [visibleSources, setVisibleSources] = useState(40),
     [picker, setPicker] = useState(false),
     [newTitle, setNewTitle] = useState(""),
     [renaming, setRenaming] = useState(false),
@@ -30,14 +31,35 @@ export function Chat() {
         .includes(query.toLowerCase()),
     ),
     chat = conversations.find((c) => c.id === active) ?? conversations[0];
+  const matches = picker
+    ? [
+        ...s.items.map((i) => ({ id: i.id, title: i.title })),
+        ...s.repositories.map((r) => ({
+          id: r.id,
+          title: `Repository: ${r.name}`,
+        })),
+        ...s.tasks.map((t) => ({
+          id: t.id,
+          title: `Plan: ${t.title}`,
+        })),
+        ...s.changes.map((c) => ({
+          id: c.id,
+          title: `Change: ${c.title}`,
+        })),
+        ...s.sources.map((i) => ({ id: i.id, title: i.title })),
+      ].filter((x) =>
+        (x.id + " " + x.title)
+          .toLowerCase()
+          .includes(contextQuery.trim().toLowerCase()),
+      )
+    : [];
   return (
     <>
       <Heading
-        eyebrow="THINK WITH YOUR SOURCES"
         title="AI copilot"
-        description="A persistent conversation workspace. The built-in assistant uses local, deterministic evidence."
+        description="Ask questions about selected issues, notes, and repository files."
         actions={
-          <Badge tone="green">
+          <Badge>
             {s.ai?.configured
               ? "OpenAI optional · local mode ready"
               : "No external model connected"}
@@ -65,6 +87,7 @@ export function Chat() {
               ) {
                 const newest = useApp.getState().data?.conversations.at(-1);
                 if (newest) setActive(newest.id);
+                setQuery("");
                 setNewTitle("");
               }
             }}
@@ -84,6 +107,7 @@ export function Chat() {
           {conversations.map((c) => (
             <button
               className={`chat-entry ${c.id === chat?.id ? "active" : ""}`}
+              aria-current={c.id === chat?.id ? "true" : undefined}
               key={c.id}
               onClick={() => setActive(c.id)}
             >
@@ -95,15 +119,6 @@ export function Chat() {
               </small>
             </button>
           ))}
-          <div className="chat-privacy">
-            <Sparkles size={18} />
-            <b>Useful without an API key</b>
-            <p>
-              Select evidence for a structured local summary. This assistant
-              stays on-device. Optional OpenAI mode requires a separate evidence
-              preview and consent.
-            </p>
-          </div>
         </aside>
         <section className="chat-main">
           {chat ? (
@@ -239,8 +254,7 @@ export function Chat() {
                 ))}
                 {!chat.messages.length && (
                   <Empty title="Start with a question and a source">
-                    Select relevant issues or imported notes below. Responses
-                    are labeled with their actual origin.
+                    Attach an issue or an imported note with the Context button.
                   </Empty>
                 )}
               </div>
@@ -262,27 +276,26 @@ export function Chat() {
                 >
                   {picker && (
                     <div className="context-picker">
-                      <b>Selected local context · nothing is uploaded</b>
-                      {[
-                        ...s.items.map((i) => ({ id: i.id, title: i.title })),
-                        ...s.repositories.map((r) => ({
-                          id: r.id,
-                          title: `Repository: ${r.name}`,
-                        })),
-                        ...s.tasks.map((t) => ({
-                          id: t.id,
-                          title: `Plan: ${t.title}`,
-                        })),
-                        ...s.changes.map((c) => ({
-                          id: c.id,
-                          title: `Change: ${c.title}`,
-                        })),
-                        ...s.sources.map((i) => ({ id: i.id, title: i.title })),
-                      ].map((x) => (
+                      <label>
+                        Find local context
+                        <input
+                          type="search"
+                          value={contextQuery}
+                          onChange={(e) => {
+                            setContextQuery(e.target.value);
+                            setVisibleSources(40);
+                          }}
+                          placeholder="Search by name or issue number"
+                        />
+                      </label>
+                      {matches.slice(0, visibleSources).map((x) => (
                         <label className="check-label" key={x.id}>
                           <input
                             type="checkbox"
                             checked={sources.includes(x.id)}
+                            disabled={
+                              sources.length >= 30 && !sources.includes(x.id)
+                            }
                             onChange={(e) =>
                               setSources(
                                 e.target.checked
@@ -294,6 +307,17 @@ export function Chat() {
                           {x.title}
                         </label>
                       ))}
+                      {!matches.length && <p>No matching sources</p>}
+                      {matches.length > visibleSources && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setVisibleSources(visibleSources + 40)}
+                        >
+                          Show more sources ({matches.length - visibleSources})
+                        </Button>
+                      )}
                     </div>
                   )}
                   <textarea
@@ -329,15 +353,19 @@ export function Chat() {
               )}
               {chat.demo && (
                 <div className="demo-chat-footer">
-                  This is a synthetic example, not a live model response. Start
-                  a new conversation for real local interactions.
+                  Start a new conversation to ask about your own sources.
                 </div>
               )}
             </>
           ) : (
-            <Empty title="A little help connecting the dots">
-              Create a conversation, or enable demo mode to explore labeled
-              examples.
+            <Empty
+              title={
+                query ? "No matching conversations" : "No conversations yet"
+              }
+            >
+              {query
+                ? "Try another search."
+                : "Enter a title and create a conversation to get started."}
             </Empty>
           )}
         </section>

@@ -2,13 +2,13 @@ import type { Item } from "../shared/types";
 import { reviewDelta } from "../shared/review";
 import { useApp } from "./store";
 import { Button } from "./components/ui/button";
-import { Markdown, OpenButton, date } from "./components/common";
+import { Markdown, OpenButton, CommentEntry, date } from "./components/common";
 export function ReviewMemory({ item }: { item: Item }) {
   const { act } = useApp();
   const delta = reviewDelta(item);
   return (
-    <section className="evidence-box">
-      <h3>Personal review memory</h3>
+    <section className="reader-section">
+      <h2>Review history</h2>
       <p>
         Current cached head:{" "}
         <code>{item.headSha?.slice(0, 12) ?? "not synchronized"}</code> ·
@@ -42,11 +42,7 @@ export function ReviewMemory({ item }: { item: Item }) {
             Exact code changes and edited-comment diffs are not available here.
           </p>
           {delta.newFeedback.map((c, n) => (
-            <article key={n}>
-              <b>{c.author}</b> · {c.state ?? "comment"} · {date(c.at)}
-              <Markdown>{c.body}</Markdown>
-              {c.url && <OpenButton url={c.url} label="Feedback source" />}
-            </article>
+            <CommentEntry key={n} comment={c} />
           ))}
         </>
       ) : (

@@ -12,6 +12,7 @@ import { join, extname, basename } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { Store } from "./database/store";
+import { seedKuadrant } from "./data/kuadrant";
 import { Credentials } from "./security/credentials";
 import { GitHubClient } from "./github/client";
 import { SyncService } from "./github/sync";
@@ -30,6 +31,7 @@ app.whenReady().then(() => {
   const dir = app.getPath("userData");
   mkdirSync(dir, { recursive: true, mode: 0o700 });
   store = new Store(join(dir, "compass.db"));
+  seedKuadrant(store);
   const credentials = new Credentials(
     join(dir, "credentials.enc"),
     safeStorage,
@@ -144,9 +146,9 @@ app.whenReady().then(() => {
   window = new BrowserWindow({
     width: 1440,
     height: 960,
-    minWidth: 1000,
-    minHeight: 700,
-    backgroundColor: "#101214",
+    minWidth: 420,
+    minHeight: 520,
+    backgroundColor: "#1b1b1a",
     title: "OSS Compass",
     webPreferences: {
       preload: join(here, "../preload/index.cjs"),
@@ -172,6 +174,7 @@ app.whenReady().then(() => {
       if (
         r.provenance === "github" &&
         r.syncedAt &&
+        r.syncedAt !== r.bundledAt &&
         !sync.active.has(r.id) &&
         Date.now() - Date.parse(r.syncedAt) > 30 * 60000
       )

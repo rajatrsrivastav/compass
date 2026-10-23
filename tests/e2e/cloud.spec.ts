@@ -32,6 +32,9 @@ test("cloud preview requires consent, shows exact passages and preserves local f
     await page.getByRole("button", { name: "New conversation" }).click();
     await page.getByRole("button", { name: "Context (0)" }).click();
     await page
+      .getByRole("searchbox", { name: "Find local context" })
+      .fill("canvas redraws");
+    await page
       .getByLabel("Reduce canvas redraws during playback", { exact: true })
       .check();
     await page.getByLabel("Chat message").fill("Summarize canvas redraws");

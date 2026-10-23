@@ -18,9 +18,9 @@ func render(_ size: Int) -> Data {
     NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmap)
     let context = NSGraphicsContext.current!.cgContext
     context.scaleBy(x: CGFloat(size) / 1024, y: CGFloat(size) / 1024)
-    NSColor(calibratedRed: 0.063, green: 0.071, blue: 0.078, alpha: 1).setFill()
+    NSColor(calibratedRed: 0.106, green: 0.106, blue: 0.102, alpha: 1).setFill()
     NSBezierPath(roundedRect: NSRect(x: 48, y: 48, width: 928, height: 928), xRadius: 210, yRadius: 210).fill()
-    let accent = NSColor(calibratedRed: 0.659, green: 0.875, blue: 0.710, alpha: 1)
+    let accent = NSColor(calibratedRed: 0.945, green: 0.663, blue: 0.510, alpha: 1)
     accent.setStroke()
     let ring = NSBezierPath(ovalIn: NSRect(x: 208, y: 208, width: 608, height: 608))
     ring.lineWidth = 34
@@ -33,7 +33,7 @@ func render(_ size: Int) -> Data {
     needle.close()
     accent.setFill()
     needle.fill()
-    NSColor(calibratedRed: 0.063, green: 0.071, blue: 0.078, alpha: 1).setFill()
+    NSColor(calibratedRed: 0.106, green: 0.106, blue: 0.102, alpha: 1).setFill()
     NSBezierPath(ovalIn: NSRect(x: 486, y: 486, width: 52, height: 52)).fill()
     NSGraphicsContext.restoreGraphicsState()
     return bitmap.representation(using: .png, properties: [:])!

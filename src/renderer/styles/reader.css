@@ -1,0 +1,393 @@
+.reader-dialog.drawer-modal {
+  width: min(760px, 88vw);
+  padding: 0;
+  margin: 0 0 0 auto;
+  max-height: 100dvh;
+  height: 100dvh;
+  color: var(--text);
+  border: 0;
+  border-inline-start: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: -12px 0 48px #0003;
+}
+.reader-dialog.drawer-modal::backdrop {
+  background: rgb(10 13 20 / 44%);
+}
+.reader-drawer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.reader-location,
+.reader-nav {
+  display: flex;
+  align-items: center;
+  padding-inline: clamp(18px, 2.5vw, 36px);
+}
+.reader-location {
+  min-height: 53px;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.reader-location code {
+  color: var(--muted);
+  font:
+    12px ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  overflow-wrap: anywhere;
+}
+.reader-nav {
+  flex-shrink: 0;
+  gap: 22px;
+  border-bottom: 1px solid var(--border);
+}
+.reader-nav button {
+  background: transparent;
+  color: var(--muted);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 12px 0 9px;
+  font-size: 13px;
+}
+.reader-nav button[aria-pressed="true"] {
+  border-bottom-color: var(--accent);
+  color: var(--text);
+  font-weight: 600;
+}
+.reader-nav span {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  margin-left: 4px;
+  padding: 1px 4px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.reader-scroll {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  padding: 24px clamp(18px, 2.5vw, 36px) 40px;
+  scrollbar-gutter: stable;
+}
+.reader-title h1 {
+  font-size: clamp(22px, 2vw, 29px);
+  line-height: 1.22;
+  margin: 10px 0 14px;
+  letter-spacing: -0.028em;
+  overflow-wrap: anywhere;
+}
+.reader-byline,
+.reader-actions,
+.file-toolbar,
+.file-footer,
+.thread-entry header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.reader-byline,
+.reader-caption,
+.file-footer,
+.thread-entry header time {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.reader-actions {
+  margin: 14px 0 7px;
+}
+.reader-scroll .reader-section {
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+  margin-top: 21px;
+}
+.reader-section h2,
+.repository-reader > h3 {
+  margin: 0 0 9px;
+  font-size: 17px;
+  letter-spacing: -0.015em;
+}
+.reader-section > h3 {
+  font-size: 14px;
+  margin: 16px 0 6px;
+}
+.reader-section p,
+.repository-reader p {
+  line-height: 1.6;
+}
+.reader-section textarea {
+  min-height: 100px;
+  margin: 0 0 8px;
+}
+.reader-related {
+  padding: 10px 0;
+}
+.reader-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 5px 16px;
+  margin: 11px 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.reader-facts dt {
+  color: var(--muted);
+}
+.reader-facts dd {
+  margin: 0;
+}
+.reader-disclosure {
+  border-block-start: 1px solid var(--border);
+  padding: 12px 0 1px;
+  margin-top: 16px;
+}
+.reader-disclosure summary {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 550;
+}
+.reader-disclosure ul {
+  list-style: disc;
+  padding-left: 22px;
+  margin: 10px 0;
+}
+.reader-disclosure li {
+  padding-block: 3px;
+}
+.reader-section .work-summary {
+  color: var(--text);
+}
+.thread-list .thread-entry,
+.reader-section .thread-entry {
+  margin: 14px 0;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.thread-entry header {
+  padding: 9px 14px;
+  background: var(--raised);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.thread-entry header time {
+  font-size: 11px;
+}
+.thread-entry .thread-date,
+.thread-entry header > time {
+  margin-left: auto;
+}
+.thread-date {
+  background: none;
+  border: 0;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.thread-date:hover {
+  text-decoration: underline;
+}
+.thread-entry > .reader-prose {
+  padding: 14px;
+}
+.markdown.reader-prose {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.markdown.reader-prose :is(p, blockquote, ul, ol, pre, .reader-table) {
+  margin: 0 0 0.9em;
+}
+.markdown.reader-prose p,
+.markdown.reader-prose :is(ul, ol) {
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+.markdown.reader-prose :is(ul, ol) {
+  padding-left: 1.55em;
+  list-style: revert;
+}
+.markdown.reader-prose li + li {
+  margin-top: 0.25em;
+}
+.markdown.reader-prose :is(h1, h2, h3, h4, h5, h6) {
+  margin: 1.3em 0 0.45em;
+  font-size: 1.05em;
+  line-height: 1.35;
+  color: var(--text);
+}
+.markdown.reader-prose h1 {
+  font-size: 1.5em;
+}
+.markdown.reader-prose h2 {
+  font-size: 1.23em;
+}
+.markdown.reader-prose code,
+.plain-file {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.markdown.reader-prose code {
+  padding: 0.11em 0.32em;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--raised);
+  color: inherit;
+  font-size: 0.88em;
+}
+.markdown.reader-prose pre {
+  max-width: 100%;
+  overflow: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+}
+.markdown.reader-prose pre code {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.markdown.reader-prose blockquote {
+  border-left: 3px solid var(--border);
+  padding: 0 0 0 12px;
+  color: var(--muted);
+}
+.markdown.reader-prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+.markdown.reader-prose .reader-table {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.reader-table table {
+  border-collapse: collapse;
+}
+.reader-table th,
+.reader-table td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: left;
+}
+.reader-table th {
+  background: var(--raised);
+}
+.reader-prose .contains-task-list {
+  list-style: none !important;
+}
+.reader-prose input[type="checkbox"] {
+  width: 1em;
+  height: 1em;
+  display: inline;
+  margin-right: 0.4em;
+}
+.reader-image-alt {
+  color: var(--muted);
+  font-style: italic;
+}
+.markdown.reader-prose > :first-child {
+  margin-top: 0;
+}
+.markdown.reader-prose > :last-child,
+.markdown.reader-prose blockquote > :last-child {
+  margin-bottom: 0;
+}
+.repository-reader {
+  min-width: 0;
+  margin-top: 18px;
+}
+.file-frame {
+  margin: 12px 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+}
+.file-toolbar,
+.file-footer {
+  padding: 8px 12px;
+  background: var(--raised);
+}
+.file-toolbar select {
+  width: auto;
+  max-width: 100%;
+  min-width: 0;
+  font:
+    12px ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+}
+.reader-switch {
+  margin-left: auto;
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.reader-switch button {
+  padding: 4px 8px;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  font-size: 12px;
+}
+.reader-switch button[aria-pressed="true"] {
+  color: var(--text);
+  background: var(--surface);
+  font-weight: 600;
+}
+.file-content {
+  padding: clamp(14px, 2vw, 26px);
+  max-height: 60vh;
+  overflow: auto;
+  border-block: 1px solid var(--border);
+}
+.file-content .reader-prose {
+  max-width: 78ch;
+  margin: auto;
+}
+.plain-file {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  tab-size: 4;
+  font-size: 13px;
+  line-height: 1.65;
+  margin: 0;
+  color: var(--text);
+}
+.file-footer {
+  justify-content: space-between;
+}
+@media (max-width: 800px) {
+  .reader-dialog.drawer-modal {
+    width: min(100vw, 760px);
+  }
+}
+.reader-location b { color: var(--text); }
+.reader-location, .reader-nav { background: var(--sidebar); }
+.reader-title h1 {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(25px, 2.4vw, 34px);
+}
+.discussion-coverage {
+  margin: 0 0 16px;
+  color: var(--muted);
+}
+.reader-scroll .reader-facts {
+  grid-template-columns: minmax(80px, max-content) minmax(0, 1fr);
+}
+.reader-facts dd, .reader-related, .source-link { overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .reader-nav { gap: 16px; }
+  .reader-scroll { padding-inline: 16px; }
+}

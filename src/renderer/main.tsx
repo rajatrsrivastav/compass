@@ -1,3 +1,4 @@
+import "./styles/app.css";
 import { StrictMode, useEffect, type ComponentType } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -11,8 +12,10 @@ import {
   Sparkles,
   Settings as SettingsIcon,
   ChevronRight,
-  WifiOff,
+  Database,
   X,
+  Columns3,
+  Flag,
 } from "lucide-react";
 import { useApp } from "./store";
 import { Onboarding } from "./Onboarding";
@@ -24,15 +27,35 @@ import { Journey } from "./Journey";
 import { Chat } from "./Chat";
 import { Settings } from "./Settings";
 import { Detail } from "./Detail";
-import "./styles/app.css";
-const navigation: [string, ComponentType<{ size?: number }>][] = [
-  ["Overview", LayoutDashboard],
-  ["Repositories", FolderGit2],
-  ["Opportunity Radar", Radar],
-  ["PR Review Queue", GitPullRequest],
-  ["Community Context", MessagesSquare],
-  ["My Journey", Route],
-  ["AI Copilot", Sparkles],
+import { Planning } from "./Planning";
+const navigation: {
+  label: string;
+  pages: [string, ComponentType<{ size?: number }>][];
+}[] = [
+  {
+    label: "Project",
+    pages: [
+      ["Overview", LayoutDashboard],
+      ["Repositories", FolderGit2],
+    ],
+  },
+  {
+    label: "Development",
+    pages: [
+      ["Opportunity Radar", Radar],
+      ["Milestones", Flag],
+      ["Issue Board", Columns3],
+      ["PR Review Queue", GitPullRequest],
+    ],
+  },
+  {
+    label: "Personal workspace",
+    pages: [
+      ["Community Context", MessagesSquare],
+      ["My Journey", Route],
+      ["AI Copilot", Sparkles],
+    ],
+  },
 ];
 function App() {
   const { data, page, error, notice, busy, refresh, navigate } = useApp();
@@ -55,6 +78,12 @@ function App() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [navigate]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [page]);
+  const section = navigation.find((group) =>
+    group.pages.some(([name]) => name === page),
+  );
   const alert = (
     <>
       {error && (
@@ -98,42 +127,47 @@ function App() {
     );
   return (
     <div className="app">
+      <a href="#workspace-content" className="skip-link">
+        Skip to content
+      </a>
       <aside className="sidebar">
         <div className="brand">
           <span>
             <Compass size={24} />
           </span>
-          <div>
-            OSS Compass<small>CONTRIBUTOR WORKSPACE</small>
-          </div>
+          <b>OSS Compass</b>
         </div>
-        <div className="workspace-label">WORKSPACE</div>
-        <nav>
-          {navigation.map(([name, Icon]) => (
-            <button
-              key={name}
-              className={page === name ? "active" : ""}
-              onClick={() => navigate(name)}
-            >
-              <Icon size={18} />
-              <span>{name}</span>
-              {page === name && <span className="nav-dot" />}
-            </button>
+        <nav aria-label="Workspace navigation">
+          {navigation.map((group) => (
+            <div className="nav-group" key={group.label}>
+              <div className="workspace-label">{group.label}</div>
+              {group.pages.map(([name, Icon]) => (
+                <button
+                  key={name}
+                  className={page === name ? "active" : ""}
+                  aria-current={page === name ? "page" : undefined}
+                  onClick={() => navigate(name)}
+                  aria-label={name}
+                  title={name}
+                >
+                  <Icon size={16} />
+                  <span>{name}</span>
+                </button>
+              ))}
+            </div>
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <div className="local-status">
-            <span className="live-dot" />
-            <div>
-              Local-first workspace<small>Your context stays with you</small>
-            </div>
-          </div>
           <button
             className={`settings-nav ${page === "Settings" ? "active" : ""}`}
+            aria-current={page === "Settings" ? "page" : undefined}
+            aria-label="Settings & privacy"
+            title="Settings & privacy"
             onClick={() => navigate("Settings")}
           >
             <SettingsIcon size={17} />
-            Settings & privacy<span>⌘ ,</span>
+            <span>Settings &amp; privacy</span>
+            <kbd>⌘ ,</kbd>
           </button>
           <div className="profile-chip">
             <div className="avatar">
@@ -148,11 +182,27 @@ function App() {
       </aside>
       <div className="workspace">
         <header className="topbar">
-          <div>
-            Workspace
+          <div className="breadcrumb">
+            {section?.label ?? "Application"}
             <ChevronRight size={14} />
             <b>{page}</b>
           </div>
+          <nav className="mobile-nav" aria-label="Pages">
+            <select
+              value={page}
+              aria-label="Go to page"
+              onChange={(event) => navigate(event.target.value)}
+            >
+              {navigation.map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.pages.map(([name]) => (
+                    <option key={name}>{name}</option>
+                  ))}
+                </optgroup>
+              ))}
+              <option value="Settings">Settings &amp; privacy</option>
+            </select>
+          </nav>
           <div>
             {data.profile.demo && (
               <span className="demo-pill">DEMO DATA VISIBLE</span>
@@ -165,22 +215,24 @@ function App() {
                 </>
               ) : (
                 <>
-                  <WifiOff size={13} />
+                  <Database size={14} />
                   Local cache
                 </>
               )}
             </span>
           </div>
         </header>
-        <main>
+        <main id="workspace-content" tabIndex={-1}>
           {page === "Overview" ? (
             <Overview />
           ) : page === "Repositories" ? (
             <Repositories />
           ) : page === "Opportunity Radar" ? (
-            <Issues />
+            <Issues key="radar" />
+          ) : page === "Milestones" || page === "Issue Board" ? (
+            <Planning board={page === "Issue Board"} />
           ) : page === "PR Review Queue" ? (
-            <Issues prs />
+            <Issues key="reviews" prs />
           ) : page === "Community Context" ? (
             <Community />
           ) : page === "My Journey" ? (

@@ -5,7 +5,7 @@ import type {
 } from "../../shared/types";
 import { GitHubClient, GitHubError } from "./client";
 const supported =
-  /^(README|CONTRIBUTING|CODE_OF_CONDUCT|CODEOWNERS|MAINTAINERS|GOVERNANCE|SECURITY|AI(?:[-_]?(?:POLICY|USAGE))?|CONTRIBUTION[-_]POLICY)(?:\.(md|txt|rst))?$/i;
+  /^(README|LICENSE|CONTRIBUTING|CODE_OF_CONDUCT|CODEOWNERS|MAINTAINERS|GOVERNANCE|SECURITY|AI(?:[-_]?(?:POLICY|USAGE))?|CONTRIBUTION[-_]POLICY)(?:\.(md|txt|rst))?$/i;
 export async function fetchGuidance(
   client: GitHubClient,
   repo: Repository,

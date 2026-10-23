@@ -1,5 +1,13 @@
 import type { AIConfig, AIStatus, EvidenceChunk, ActionResult } from "./ai";
 export type Provenance = "github" | "manual" | "import" | "demo";
+export const boardStages = [
+  "Backlog",
+  "Investigating",
+  "In progress",
+  "Blocked",
+  "Done",
+] as const;
+export type BoardStage = (typeof boardStages)[number];
 export type ReviewState =
   | "Not reviewed"
   | "Investigating"
@@ -48,6 +56,20 @@ export interface Repository {
   guidance: Record<string, string>;
   remaining: number | null;
   briefing?: Briefing;
+  bundledAt?: string;
+  workCatalogComplete?: boolean;
+  milestones?: Milestone[];
+  milestonesObservedAt?: string;
+}
+export interface Milestone {
+  number: number;
+  title: string;
+  description: string;
+  state: "open" | "closed";
+  openItems: number;
+  closedItems: number;
+  dueOn: string | null;
+  url: string;
 }
 export interface Inspection {
   id: string;
@@ -75,6 +97,8 @@ export interface Item {
   author: string;
   labels: string[];
   assignees: string[];
+  milestone?: number | null;
+  boardStage?: BoardStage;
   createdAt: string;
   updatedAt: string;
   observedAt: string;
@@ -205,6 +229,7 @@ export type Action =
       saved?: boolean;
       reviewState?: ReviewState;
       note?: string;
+      boardStage?: BoardStage | null;
     }
   | {
       type: "source:add";

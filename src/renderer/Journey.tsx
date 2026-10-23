@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Plus, Download, Check, Trash2, CalendarDays } from "lucide-react";
 import { useApp } from "./store";
 import type { Task } from "../shared/types";
 import { Button } from "./components/ui/button";
-import { Heading, Badge, Empty, OpenButton } from "./components/common";
+import { Heading, Badge, OpenButton } from "./components/common";
 export function Journey() {
   const { data: s, act } = useApp();
   const [title, setTitle] = useState(""),
@@ -11,6 +11,7 @@ export function Journey() {
     [deadline, setDeadline] = useState(""),
     [type, setType] = useState<Task["type"]>("objective"),
     [url, setUrl] = useState("");
+  const entryTitle = useRef<HTMLInputElement>(null);
   if (!s) return null;
   const planned = s.tasks
     .filter((t) => !t.done && t.type !== "achievement")
@@ -18,27 +19,28 @@ export function Journey() {
   return (
     <>
       <Heading
-        eyebrow="DEPTH OVER ACTIVITY"
         title="My OSS journey"
-        description="Plan within your capacity. Record the work you can stand behind."
+        description="Schedule work, track deadlines, and record contributions."
         actions={
-          <Button
-            variant="secondary"
-            onClick={() => void act({ type: "export", kind: "journey" })}
-          >
-            <Download size={15} />
-            Export factual report
-          </Button>
+          <>
+            <Button onClick={() => entryTitle.current?.focus()}>
+              <Plus size={15} /> Add entry
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => void act({ type: "export", kind: "journey" })}
+            >
+              <Download size={15} />
+              Export factual report
+            </Button>
+          </>
         }
       />
       <div className="journey-summary panel">
         <div>
-          <Badge tone="green">{s.profile.goal}</Badge>
-          <h2>Small steps, meaningful progress.</h2>
-          <p>
-            Private preparation and manually entered achievements stay clearly
-            separated from GitHub evidence.
-          </p>
+          <Badge>Weekly plan</Badge>
+          <h2>{s.profile.goal}</h2>
+          <p>{s.tasks.filter((t) => !t.done).length} unfinished entries</p>
         </div>
         <div className="capacity">
           <strong>
@@ -48,6 +50,80 @@ export function Journey() {
           <span>weekly capacity</span>
           <progress max={s.profile.hours} value={planned} />
         </div>
+      </div>
+
+      <div className="board journey-board">
+        {["Planned", "Completed", "Achievements"].map((column, n) => {
+          const tasks = s.tasks.filter((t) =>
+            n === 2
+              ? t.type === "achievement"
+              : t.type !== "achievement" && t.done === (n === 1),
+          );
+          return (
+            <section className="board-column" key={column}>
+              <div className="section-title">
+                <h2>{column}</h2>
+                <Badge>{tasks.length}</Badge>
+              </div>
+              {tasks.map((t) => (
+                <article className="panel task-card" key={t.id}>
+                  <Badge tone={t.type === "achievement" ? "amber" : "neutral"}>
+                    {t.type === "achievement" ? "Manually entered" : t.type}
+                  </Badge>
+                  <h3>{t.title}</h3>
+                  <div className="task-meta">
+                    <span>{t.hours}h</span>
+                    {t.deadline && (
+                      <span>
+                        <CalendarDays size={13} />
+                        {t.deadline}
+                      </span>
+                    )}
+                  </div>
+                  {t.url && <OpenButton url={t.url} label="Evidence link" />}
+                  <div className="inline-actions">
+                    {t.type !== "achievement" && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() =>
+                          void act({
+                            type: "task:save",
+                            task: { ...t, done: !t.done },
+                          })
+                        }
+                      >
+                        <Check size={14} />
+                        {t.done ? "Reopen" : "Mark complete"}
+                      </Button>
+                    )}
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      aria-label={`Delete ${t.title}`}
+                      onClick={() =>
+                        void act({ type: "task:delete", id: t.id })
+                      }
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                  </div>
+                </article>
+              ))}
+              {!tasks.length && (
+                <p className="empty-column">
+                  {
+                    [
+                      "No planned work",
+                      "No completed work",
+                      "No achievements recorded",
+                    ][n]
+                  }
+                </p>
+              )}
+            </section>
+          );
+        })}
       </div>
       <form
         className="panel task-form"
@@ -72,11 +148,12 @@ export function Journey() {
           }
         }}
       >
-        <h2>Make room for the next step</h2>
+        <h2>Add a plan entry</h2>
         <div className="form-row">
           <label className="grow">
             Objective or achievement
             <input
+              ref={entryTitle}
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -152,73 +229,6 @@ export function Journey() {
           ))}
         </div>
       </form>
-      <div className="board">
-        {["Planned", "Completed", "Achievements"].map((column, n) => {
-          const tasks = s.tasks.filter((t) =>
-            n === 2
-              ? t.type === "achievement"
-              : t.type !== "achievement" && t.done === (n === 1),
-          );
-          return (
-            <section className="board-column" key={column}>
-              <div className="section-title">
-                <h2>{column}</h2>
-                <Badge>{tasks.length}</Badge>
-              </div>
-              {tasks.map((t) => (
-                <article className="panel task-card" key={t.id}>
-                  <Badge tone={t.type === "achievement" ? "amber" : "neutral"}>
-                    {t.type === "achievement" ? "Manually entered" : t.type}
-                  </Badge>
-                  <h3>{t.title}</h3>
-                  <div className="task-meta">
-                    <span>{t.hours}h</span>
-                    {t.deadline && (
-                      <span>
-                        <CalendarDays size={13} />
-                        {t.deadline}
-                      </span>
-                    )}
-                  </div>
-                  {t.url && <OpenButton url={t.url} label="Evidence link" />}
-                  <div className="inline-actions">
-                    {t.type !== "achievement" && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() =>
-                          void act({
-                            type: "task:save",
-                            task: { ...t, done: !t.done },
-                          })
-                        }
-                      >
-                        <Check size={14} />
-                        {t.done ? "Reopen" : "Mark complete"}
-                      </Button>
-                    )}
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      aria-label={`Delete ${t.title}`}
-                      onClick={() =>
-                        void act({ type: "task:delete", id: t.id })
-                      }
-                    >
-                      <Trash2 size={14} />
-                    </Button>
-                  </div>
-                </article>
-              ))}
-              {!tasks.length && (
-                <Empty title="Nothing here yet">
-                  Your next step can be small.
-                </Empty>
-              )}
-            </section>
-          );
-        })}
-      </div>
     </>
   );
 }

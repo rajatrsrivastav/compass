@@ -1,0 +1,154 @@
+.overview-metrics.stat-grid {
+  gap: 0;
+  border-block: 1px solid var(--border);
+}
+.overview-metrics .stat-card {
+  padding: 14px 18px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+.overview-metrics .stat-card + .stat-card {
+  border-inline-start: 1px solid var(--border);
+}
+.overview-metrics .stat-card:hover {
+  background: var(--raised);
+}
+.overview-metrics .stat-card strong {
+  margin: 6px 0 0;
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+}
+.project-caption,
+.repository-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.project-caption {
+  font-size: 13px;
+  color: var(--muted);
+}
+.overview-project h2 {
+  margin-block: 13px 7px;
+  overflow-wrap: anywhere;
+}
+.overview-project .focus-meta {
+  color: var(--muted);
+}
+.overview-project > button {
+  margin: 2px 2px 2px 0;
+}
+.onboarding .onboarding-project h1 {
+  font-size: clamp(30px, 3.3vw, 46px);
+  letter-spacing: -0.035em;
+}
+.onboarding-project .onboarding-snapshot {
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+.onboarding-snapshot h2 {
+  font-size: 18px;
+  margin: 12px 0 8px;
+}
+.onboarding-snapshot dl {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 20px 0;
+}
+.onboarding-snapshot dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+.onboarding-snapshot dd {
+  margin: 4px 0 0;
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.repo-grid.repository-library {
+  grid-template-columns: minmax(0, 1fr);
+}
+.repository-heading h2 {
+  overflow-wrap: anywhere;
+}
+.repository-heading .badge {
+  margin-inline-start: auto;
+}
+.repository-library .sync-info {
+  flex-flow: row wrap;
+  align-items: baseline;
+  column-gap: 8px;
+}
+.repository-library .repo-meta {
+  margin-block: 14px;
+  flex-wrap: wrap;
+}
+.repository-library .sync-info .error-text {
+  flex-basis: 100%;
+}
+.repository-library .sync-info span:nth-child(3) {
+  flex-basis: 100%;
+}
+.radar-results .item-main {
+  align-items: center;
+  padding-block: 16px;
+  min-width: 0;
+}
+.radar-results .item-main > div {
+  min-width: 0;
+}
+.radar-results .item-main h3 {
+  margin-block: 4px 7px;
+  overflow-wrap: anywhere;
+}
+.radar-results .score {
+  background: none;
+  border: 0;
+  min-width: 40px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.radar-results .score small {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0;
+}
+.radar-signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 14px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.radar-signals > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.milestone-grid .milestone-card {
+  grid-template-rows: auto 1fr auto auto;
+  gap: 8px;
+}
+.milestone-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.milestone-title strong {
+  font-size: 18px;
+  color: var(--text);
+}
+.milestone-title svg {
+  color: var(--muted);
+}
+.milestone-title .badge {
+  margin-inline-start: auto;
+}
+.milestone-grid .milestone-card progress {
+  margin: 4px 0;
+}
+.issue-board .board-droppable:hover {
+  border-color: var(--accent);
+}

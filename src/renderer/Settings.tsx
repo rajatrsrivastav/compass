@@ -18,83 +18,133 @@ export function Settings() {
   return (
     <>
       <Heading
-        eyebrow="MAKE IT YOURS"
         title="Settings & privacy"
-        description="Your profile, your credentials, your local workspace."
+        description="Manage your contributor profile, appearance, and API access."
       />
       <div className="settings-grid">
-        <form
-          className="panel"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void act({ type: "profile", value: p });
-          }}
-        >
-          <h2>Contributor profile</h2>
-          <label>
-            GitHub username
-            <input
-              required
-              value={p.username}
-              onChange={(e) => setP({ ...p, username: e.target.value })}
-            />
-          </label>
-          <label>
-            Technical skills
-            <input
-              value={p.skills}
-              onChange={(e) => setP({ ...p, skills: e.target.value })}
-            />
-          </label>
-          <label>
-            Interests
-            <input
-              value={p.interests}
-              onChange={(e) => setP({ ...p, interests: e.target.value })}
-            />
-          </label>
-          <div className="form-row">
+        <div className="settings-column">
+          <form
+            className="panel"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void act({ type: "profile", value: p });
+            }}
+          >
+            <h2>Contributor profile</h2>
             <label>
-              Weekly hours
+              GitHub username
               <input
-                type="number"
-                min="1"
-                max="80"
-                value={p.hours}
-                onChange={(e) => setP({ ...p, hours: Number(e.target.value) })}
+                required
+                value={p.username}
+                onChange={(e) => setP({ ...p, username: e.target.value })}
               />
             </label>
             <label>
-              Goal
-              <select
-                value={p.goal}
-                onChange={(e) => setP({ ...p, goal: e.target.value })}
-              >
-                {goals.map((g) => (
-                  <option key={g}>{g}</option>
-                ))}
-              </select>
+              Technical skills
+              <input
+                value={p.skills}
+                onChange={(e) => setP({ ...p, skills: e.target.value })}
+              />
             </label>
-          </div>
-          <label>
-            Maximum records per endpoint per sync
-            <input
-              type="number"
-              min="10"
-              max="500"
-              value={p.syncLimit}
-              onChange={(e) =>
-                setP({ ...p, syncLimit: Number(e.target.value) })
-              }
-            />
-          </label>
-          <p className="footnote">
-            Comments and reviews are enriched for up to 12 recently updated
-            items per synchronization. Larger snapshots are labeled partial.
-          </p>
-          <Button>Save profile</Button>
-        </form>
-        <div>
+            <label>
+              Interests
+              <input
+                value={p.interests}
+                onChange={(e) => setP({ ...p, interests: e.target.value })}
+              />
+            </label>
+            <div className="form-row">
+              <label>
+                Weekly hours
+                <input
+                  type="number"
+                  min="1"
+                  max="80"
+                  value={p.hours}
+                  onChange={(e) =>
+                    setP({ ...p, hours: Number(e.target.value) })
+                  }
+                />
+              </label>
+              <label>
+                Goal
+                <select
+                  value={p.goal}
+                  onChange={(e) => setP({ ...p, goal: e.target.value })}
+                >
+                  {goals.map((g) => (
+                    <option key={g}>{g}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <label>
+              Maximum records per endpoint per sync
+              <input
+                type="number"
+                min="10"
+                max="500"
+                value={p.syncLimit}
+                onChange={(e) =>
+                  setP({ ...p, syncLimit: Number(e.target.value) })
+                }
+              />
+            </label>
+            <p className="footnote">
+              Comments and reviews are enriched for up to 12 recently updated
+              items per synchronization. Larger snapshots are labeled partial.
+            </p>
+            <Button>Save profile</Button>
+          </form>
+          <section className="panel">
+            <h2>Workspace preferences</h2>
+            <div className="preference">
+              <div>
+                <b>Appearance</b>
+                <p>Current theme · {s.profile.theme}</p>
+              </div>
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  void act({
+                    type: "profile",
+                    value: {
+                      ...s.profile,
+                      theme: s.profile.theme === "dark" ? "light" : "dark",
+                    },
+                  })
+                }
+              >
+                {s.profile.theme === "dark" ? (
+                  <Sun size={16} />
+                ) : (
+                  <Moon size={16} />
+                )}{" "}
+                {s.profile.theme === "dark" ? "Light" : "Dark"}
+              </Button>
+            </div>
+            <label className="check-label">
+              <input
+                type="checkbox"
+                checked={s.profile.demo}
+                onChange={(e) =>
+                  void act({
+                    type: "profile",
+                    value: { ...s.profile, demo: e.target.checked },
+                  })
+                }
+              />
+              Show synthetic demo records and conversations
+            </label>
+            <Button
+              variant="ghost"
+              onClick={() => void act({ type: "demo:seed" })}
+            >
+              Load offline demo fixtures
+            </Button>
+          </section>
+        </div>
+        <div className="settings-column">
           <section className="panel">
             <h2>
               <KeyRound size={18} />
@@ -151,53 +201,6 @@ export function Settings() {
             </form>
           </section>
           <AISettings />
-          <section className="panel">
-            <h2>Workspace preferences</h2>
-            <div className="preference">
-              <div>
-                <b>Appearance</b>
-                <p>Choose the theme that suits your space.</p>
-              </div>
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  void act({
-                    type: "profile",
-                    value: {
-                      ...s.profile,
-                      theme: s.profile.theme === "dark" ? "light" : "dark",
-                    },
-                  })
-                }
-              >
-                {s.profile.theme === "dark" ? (
-                  <Sun size={16} />
-                ) : (
-                  <Moon size={16} />
-                )}{" "}
-                {s.profile.theme === "dark" ? "Light" : "Dark"}
-              </Button>
-            </div>
-            <label className="check-label">
-              <input
-                type="checkbox"
-                checked={s.profile.demo}
-                onChange={(e) =>
-                  void act({
-                    type: "profile",
-                    value: { ...s.profile, demo: e.target.checked },
-                  })
-                }
-              />
-              Show synthetic demo records and conversations
-            </label>
-            <Button
-              variant="ghost"
-              onClick={() => void act({ type: "demo:seed" })}
-            >
-              Load offline demo fixtures
-            </Button>
-          </section>
         </div>
       </div>
       <section className="panel privacy">
@@ -230,7 +233,7 @@ export function Settings() {
           </div>
           <div>
             <ShieldCheck />
-            <h3>You remain in control</h3>
+            <h3>Data management</h3>
             <p>
               Import only content you may store. Delete repositories, sources,
               and conversations in their workspaces. Delete tokens above. Keep

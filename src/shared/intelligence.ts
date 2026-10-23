@@ -57,7 +57,7 @@ export function assessWork(
   );
   const incomplete =
     !repository?.syncedAt ||
-    repository.partial ||
+    !(repository.workCatalogComplete ?? !repository.partial) ||
     !item.commentsObservedAt ||
     !item.commentsComplete;
   const status = related.some((r) => r.item.state === "open")

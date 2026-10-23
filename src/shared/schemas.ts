@@ -1,4 +1,5 @@
 import { models } from "./ai";
+import { boardStages } from "./types";
 import { z } from "zod";
 const text = z.string().max(10000),
   id = z.string().min(1).max(300);
@@ -41,6 +42,7 @@ export const actionSchema = z.discriminatedUnion("type", [
       ])
       .optional(),
     note: text.optional(),
+    boardStage: z.enum(boardStages).nullable().optional(),
   }),
   z.object({
     type: z.literal("source:add"),

@@ -56,6 +56,7 @@ export function parseImport(text: string, format: string): Segment[] {
           ];
     });
   }
+  if (format === "md" || format === "txt") return [{ text, timestamp: null }];
   return text
     .split(/\n\s*\n/)
     .filter(Boolean)

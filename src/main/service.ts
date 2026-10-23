@@ -8,6 +8,7 @@ import { SyncService } from "./github/sync";
 import { Credentials } from "./security/credentials";
 import { parseImport, extractReferences, candidates } from "./imports/parse";
 import { seedDemo } from "./demo";
+import { kuadrantId, seedKuadrant } from "./data/kuadrant";
 import { feedbackId } from "../shared/review";
 import { rank } from "../shared/ranking";
 export class Service {
@@ -119,6 +120,10 @@ export class Service {
         const id = parseRepo(a.value);
         if (this.store.get("repositories", id))
           throw new Error("Repository already tracked");
+        if (id === kuadrantId) {
+          seedKuadrant(this.store, true);
+          return { message: "Bundled GitHub snapshot restored." };
+        }
         this.store.put("repositories", {
           id,
           name: id,
@@ -163,6 +168,9 @@ export class Service {
             ? { note: a.note, noteHeadSha: item.headSha ?? null }
             : {}),
           ...(a.reviewState ? { reviewState: a.reviewState } : {}),
+          ...(a.boardStage !== undefined && item.kind === "issue"
+            ? { boardStage: a.boardStage ?? undefined }
+            : {}),
         });
         break;
       }

@@ -1,24 +1,78 @@
 import ReactMarkdown from "react-markdown";
-import type { ReactNode } from "react";
-import { ExternalLink, ArrowUpRight, Inbox } from "lucide-react";
+import remarkGfm from "remark-gfm";
+import "../styles/reader.css";
+import "../styles/repository.css";
+import { type ReactNode, useState } from "react";
+import type { Comment } from "../../shared/types";
+import { ArrowUpRight, Code2, Inbox } from "lucide-react";
 import { Button } from "./ui/button";
 import { useApp } from "../store";
-export function Markdown({ children }: { children: string }) {
+export function TextFile({
+  children,
+  numbered = false,
+}: {
+  children: string;
+  numbered?: boolean;
+}) {
+  if (!numbered) return <pre className="plain-file">{children}</pre>;
+  const lines = children.split("\n");
+  return (
+    <pre className="plain-file numbered-file">
+      {lines.map((line, index) => (
+        <span className="file-line" key={index} data-line={index + 1}>
+          {line}
+          {index < lines.length - 1 ? "\n" : ""}
+        </span>
+      ))}
+    </pre>
+  );
+}
+
+export function Markdown({
+  children,
+  sourceUrl,
+  hideHtml = false,
+}: {
+  children: string;
+  sourceUrl?: string;
+  hideHtml?: boolean;
+}) {
   const act = useApp((s) => s.act);
   return (
-    <div className="markdown">
+    <div className="markdown reader-prose">
       <ReactMarkdown
+        skipHtml={hideHtml}
+        remarkPlugins={[remarkGfm]}
         components={{
-          a: ({ href, children }) => (
-            <button
-              className="text-link"
-              onClick={() => href && void act({ type: "external", url: href })}
-            >
-              {children}
-              <ExternalLink size={12} />
-            </button>
+          a: ({ href, children }) => {
+            let url: URL;
+            try {
+              if (!href) return <>{children}</>;
+              url = new URL(href, sourceUrl);
+            } catch {
+              return <>{children}</>;
+            }
+            if (url.protocol !== "https:") return <>{children}</>;
+            return (
+              <a
+                href={url.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  void act({ type: "external", url: url.href });
+                }}
+              >
+                {children}
+              </a>
+            );
+          },
+          img: ({ alt }) => (
+            <span className="reader-image-alt">{alt || "Image"}</span>
           ),
-          img: () => <span>[Remote image omitted]</span>,
+          table: ({ children }) => (
+            <div className="reader-table">
+              <table>{children}</table>
+            </div>
+          ),
         }}
       >
         {children}
@@ -26,6 +80,54 @@ export function Markdown({ children }: { children: string }) {
     </div>
   );
 }
+export function CommentEntry({ comment }: { comment: Comment }) {
+  const [source, setSource] = useState(false);
+  const act = useApp((s) => s.act);
+  return (
+    <article className="thread-entry">
+      <header>
+        <span className="comment-initial" aria-hidden="true">
+          {comment.author.slice(0, 1).toUpperCase()}
+        </span>
+        <strong>{comment.author}</strong>
+        {comment.state && <Badge>{comment.state}</Badge>}
+        {comment.url ? (
+          <button
+            className="thread-date"
+            title="Open original on GitHub"
+            onClick={() => void act({ type: "external", url: comment.url })}
+          >
+            <time dateTime={comment.at}>{date(comment.at)}</time>
+            <ArrowUpRight size={12} />
+          </button>
+        ) : (
+          <time dateTime={comment.at}>{date(comment.at)}</time>
+        )}
+      </header>
+      {comment.body && (
+        <>
+          {source ? (
+            <TextFile>{comment.body}</TextFile>
+          ) : (
+            <Markdown sourceUrl={comment.url} hideHtml>
+              {comment.body}
+            </Markdown>
+          )}
+          <footer>
+            <button
+              type="button"
+              aria-pressed={source}
+              onClick={() => setSource(!source)}
+            >
+              <Code2 size={13} /> {source ? "Show preview" : "View source"}
+            </button>
+          </footer>
+        </>
+      )}
+    </article>
+  );
+}
+
 export function Badge({
   children,
   tone = "neutral",
@@ -56,17 +158,17 @@ export function Heading({
   description,
   actions,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
-  description: string;
+  description?: string;
   actions?: ReactNode;
 }) {
   return (
     <div className="page-heading">
       <div>
-        <div className="eyebrow">{eyebrow}</div>
+        {eyebrow && <div className="eyebrow">{eyebrow}</div>}
         <h1>{title}</h1>
-        <p>{description}</p>
+        {description && <p>{description}</p>}
       </div>
       <div className="heading-actions">{actions}</div>
     </div>

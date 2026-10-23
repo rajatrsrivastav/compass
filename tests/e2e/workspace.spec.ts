@@ -10,13 +10,13 @@ test("complete offline contribution workflow survives a desktop restart", async 
   });
   try {
     let page = await app.firstWindow();
-    await expect(page.getByText("Set your direction")).toBeVisible();
+    await expect(page.getByText("Contributor profile")).toBeVisible();
     await page.getByLabel("GitHub username").fill("course-contributor");
     await page.getByLabel("Technical skills").fill("React, TypeScript");
     await page.getByRole("button", { name: "Create my workspace" }).click();
     await expect(
       page.getByRole("heading", {
-        name: "A little context. A better contribution.",
+        name: "Workspace overview",
       }),
     ).toBeVisible();
     await page.getByRole("button", { name: "Explore demo workspace" }).click();
@@ -25,13 +25,20 @@ test("complete offline contribution workflow survives a desktop restart", async 
       .getByRole("button", { name: "Repositories", exact: true })
       .click();
     await page
-      .getByRole("button", { name: "Organization briefing", exact: true })
+      .locator(".repo-card")
+      .filter({
+        has: page.getByRole("heading", {
+          name: "compass-demo/canvas-lab",
+          exact: true,
+        }),
+      })
+      .getByRole("button", { name: "Repository files", exact: true })
       .click();
     await expect(
-      page.getByRole("heading", { name: "Organization briefing", exact: true }),
+      page.getByRole("heading", { name: "Repository files", exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByText("Missing policy is not permission", { exact: false }),
+      page.getByRole("combobox", { name: "Repository file", exact: true }),
     ).toBeVisible();
     await page.screenshot({
       path: "test-results/screenshots/organization-briefing.png",
@@ -60,7 +67,7 @@ test("complete offline contribution workflow survives a desktop restart", async 
       path: "test-results/screenshots/before-you-start.png",
     });
     await expect(
-      page.getByText("BEFORE YOU START", { exact: true }),
+      page.getByRole("heading", { name: "Before you start", exact: true }),
     ).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Close details" }),
@@ -145,6 +152,9 @@ test("complete offline contribution workflow survives a desktop restart", async 
       .fill("My real local conversation");
     await page.getByRole("button", { name: "New conversation" }).click();
     await page.getByRole("button", { name: "Context (0)" }).click();
+    await page
+      .getByRole("searchbox", { name: "Find local context" })
+      .fill("canvas redraws");
     await page
       .getByLabel("Reduce canvas redraws during playback", { exact: true })
       .check();

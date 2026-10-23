@@ -48,11 +48,11 @@ export function CloudComposer({
   return (
     <div className="cloud-composer">
       <p>
-        Optional cloud mode ·{" "}
+        OpenAI ·{" "}
         {s?.ai?.configured
-          ? "OpenAI key configured"
+          ? "Key configured"
           : "Add your key in Settings to send"}
-        . Local Send remains available.
+        .
       </p>
       <Button
         type="button"

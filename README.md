@@ -8,6 +8,7 @@ A local-first desktop workspace for open-source contributors. Investigate public
 
 - Public repository synchronization with pagination, caching, cancellation, rate-limit handling, and visible coverage/freshness limits.
 - Opportunity ranking, related-PR warnings, contribution guidance, and a Before You Start assessment.
+- Milestone progress and a private Kanban issue board with repository, milestone, and issue-state filters.
 - Private investigation notes, saved issues, PR review states, inspection history, and stale-head warnings.
 - Manual community notes and TXT, Markdown, SRT, VTT, or Slack channel JSON imports with references, annotations, and local search.
 - Weekly capacity planning, deadlines, user-entered achievements, and Markdown exports.
@@ -33,7 +34,9 @@ npm ci
 npm run dev
 ```
 
-Complete onboarding, open **Repositories**, add `owner/repo`, and select **Synchronize**. Public repositories work without a token; an optional read-only token increases available quota. For a repeatable offline demonstration, select **Explore demo workspace** after onboarding. Demo records remain visibly labeled and can be hidden in Settings.
+Complete onboarding and open **Opportunity Radar**, **Milestones**, or **Issue Board**. The source build automatically loads a public Kuadrant MCP Gateway snapshot from 25 November 2026 with 609 issues, 1,086 pull requests, and 10 milestones. It includes conversation comments for items open at capture time and the original README, contributor guide, and license. Large closed-item descriptions are excerpted. PR reviews and checks require a live refresh. [Snapshot source](https://github.com/Kuadrant/mcp-gateway)
+
+Move cards between stages by dragging them or using the stage menu. Stage changes, private notes, and saved issues stay in SQLite. Use **Repositories** to add other public projects or refresh the bundled repository. Live coverage depends on the configured limits and available GitHub API quota. The separate synthetic demo remains available through **Explore demo workspace** after onboarding.
 
 Use **Opportunity Radar** to save an issue and write investigation notes. Use **PR Review Queue → Record inspection** to retain your private review context. Import authorized text through **Community Context**, plan tasks in **My Journey**, and export reports through the native save dialog. In **AI Copilot**, create a conversation and select local evidence; ordinary **Send message** stays local. Cloud use is optional and described in [optional AI](docs/architecture/OPTIONAL_AI.md).
 

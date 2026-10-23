@@ -20,9 +20,7 @@ export function AISettings() {
           : "Local mode available"}
       </Badge>
       <p>
-        Paid API use is optional. Nothing is sent until you preview evidence and
-        authorize a request in chat. Account model access is verified by the
-        provider when you send.
+        Preview the selected passages in chat before approving a paid request.
       </p>
       <form
         onSubmit={async (e) => {

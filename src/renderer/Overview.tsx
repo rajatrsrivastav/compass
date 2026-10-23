@@ -6,12 +6,13 @@ import {
   ArrowRight,
   ArrowUpRight,
   Clock,
-  CheckCircle2,
   Target,
 } from "lucide-react";
 import { useApp } from "./store";
 import { Button } from "./components/ui/button";
 import { Badge, Empty, Heading, SectionTitle, date } from "./components/common";
+import "./styles/pages.css";
+import "./styles/workspace.css";
 import { rank } from "../shared/ranking";
 export function Overview() {
   const { data: s, navigate, select, act } = useApp();
@@ -25,7 +26,10 @@ export function Overview() {
     ),
     saved = s.items.filter((i) => i.saved),
     reviews = s.items.filter(
-      (i) => i.kind === "pr" && i.reviewState !== "Reviewed privately",
+      (i) =>
+        i.kind === "pr" &&
+        i.state === "open" &&
+        i.reviewState !== "Reviewed privately",
     ),
     primary =
       s.repositories.find((r) => r.id === s.profile.primary) ??
@@ -36,36 +40,31 @@ export function Overview() {
       value: s.repositories.length,
       icon: FolderGit2,
       page: "Repositories",
-      sub: "Your open-source orbit",
     },
     {
       label: "Saved investigations",
       value: saved.length,
       icon: Bookmark,
       page: "Opportunity Radar",
-      sub: "Ready for a closer look",
     },
     {
       label: "PRs in your queue",
       value: reviews.length,
       icon: GitPullRequest,
       page: "PR Review Queue",
-      sub: "Private review workspace",
     },
     {
       label: "Community sources",
       value: s.sources.length,
       icon: MessagesSquare,
       page: "Community Context",
-      sub: "Context worth keeping",
     },
   ];
   return (
     <>
       <Heading
-        eyebrow="YOUR CONTRIBUTOR WORKSPACE"
-        title={`A little context. A better contribution.`}
-        description={`Welcome back, ${s.profile.username}. Here’s where your attention can make a difference.`}
+        title="Workspace overview"
+        description={`${s.profile.username} · ${s.profile.goal}`}
         actions={
           <Button variant="secondary" onClick={() => navigate("My Journey")}>
             <Target size={16} />
@@ -74,8 +73,8 @@ export function Overview() {
           </Button>
         }
       />
-      <div className="stat-grid">
-        {stats.map(({ label, value, icon: Icon, page, sub }) => (
+      <div className="stat-grid overview-metrics">
+        {stats.map(({ label, value, icon: Icon, page }) => (
           <button
             className="stat-card"
             key={label}
@@ -86,24 +85,16 @@ export function Overview() {
               <Icon size={17} />
             </div>
             <strong>{value}</strong>
-            <small>{sub}</small>
           </button>
         ))}
       </div>
       <div className="overview-grid">
         <div>
           <section className="panel briefing">
-            <SectionTitle
-              title="Your OSS briefing"
-              sub="Evidence from your workspace, with a clear next step."
-              action={<Badge tone="green">Local intelligence</Badge>}
-            />
+            <SectionTitle title="Project activity" />
             {!s.repositories.length ? (
-              <Empty title="Your next contribution starts here">
-                <p>
-                  Add a public repository, or explore a realistic offline
-                  workspace.
-                </p>
+              <Empty title="No repositories yet">
+                <p>Add a public repository or load the sample workspace.</p>
                 <div className="inline-actions">
                   <Button onClick={() => navigate("Repositories")}>
                     Connect a repository
@@ -130,7 +121,7 @@ export function Overview() {
                     </span>
                     <div>
                       <div className="row-meta">
-                        OBSERVED CHANGE · {date(c.at)}
+                        Repository update · {date(c.at)}
                       </div>
                       <h3>{c.title}</h3>
                       <p>{c.detail}</p>
@@ -149,26 +140,22 @@ export function Overview() {
                     </span>
                     <div>
                       <div className="row-meta">
-                        {o.category.toUpperCase()} ·{" "}
-                        {o.item.provenance === "demo"
-                          ? "SYNTHETIC"
-                          : "CACHED GITHUB"}
+                        {o.item.repo}#{o.item.number} · {o.category}
+                        {o.item.provenance === "demo" && " · Synthetic demo"}
                       </div>
                       <h3>{o.item.title}</h3>
                       <p>
                         {o.reasons.find((r) => r.includes("Matches")) ??
-                          o.reasons[1]}{" "}
-                        Start by checking the discussion.
+                          o.reasons[1]}
                       </p>
                     </div>
                     <ArrowUpRight size={16} />
                   </button>
                 ))}
-                {!s.changes.length && (
-                  <div className="footnote">
-                    <CheckCircle2 size={14} /> No change alerts yet. First
-                    synchronization establishes a baseline.
-                  </div>
+                {!s.changes.length && !opportunities.length && (
+                  <Empty title="No project activity yet">
+                    Synchronize a repository to load issues and pull requests.
+                  </Empty>
                 )}
               </>
             )}
@@ -176,7 +163,6 @@ export function Overview() {
           <section className="panel">
             <SectionTitle
               title="Saved for investigation"
-              sub="Keep a small, intentional list."
               action={
                 <Button
                   variant="ghost"
@@ -206,29 +192,33 @@ export function Overview() {
                 </button>
               ))
             ) : (
-              <Empty title="Room for your next investigation">
+              <Empty title="No saved items">
                 Save an issue from the Opportunity Radar.
               </Empty>
             )}
           </section>
         </div>
         <aside>
-          <section className="focus-card">
-            <div className="eyebrow">
-              <span className="live-dot" /> CURRENT FOCUS
+          <section className="panel overview-project">
+            <div className="project-caption">
+              <FolderGit2 size={15} /> Primary repository
             </div>
-            <h2>{primary?.name.split("/")[1] ?? "Choose your project"}</h2>
+            <h2>{primary?.name ?? "Choose a project"}</h2>
             <p>
               {primary?.description ??
-                "Depth beats breadth. Pick one community to understand first."}
+                "Choose a primary repository from the repository list."}
             </p>
             {primary && (
               <div className="focus-meta">
                 <span>{primary.language}</span>
-                <Badge tone={primary.provenance === "demo" ? "amber" : "green"}>
+                <Badge
+                  tone={primary.provenance === "demo" ? "amber" : "neutral"}
+                >
                   {primary.provenance === "demo"
                     ? "Synthetic demo"
-                    : "GitHub cache"}
+                    : primary.bundledAt === primary.syncedAt
+                      ? "Bundled GitHub snapshot"
+                      : "GitHub cache"}
                 </Badge>
               </div>
             )}
@@ -239,6 +229,14 @@ export function Overview() {
               Manage repositories
               <ArrowUpRight size={14} />
             </Button>
+            {!s.profile.demo && !!s.repositories.length && (
+              <Button
+                variant="ghost"
+                onClick={() => void act({ type: "demo:seed" })}
+              >
+                Explore demo workspace
+              </Button>
+            )}
           </section>
           <section className="panel">
             <SectionTitle title="This week" sub={s.profile.goal} />
@@ -272,23 +270,12 @@ export function Overview() {
                 </button>
               ))}
             <Button variant="ghost" onClick={() => navigate("My Journey")}>
-              Shape your week
+              Open weekly plan
               <ArrowRight size={14} />
             </Button>
           </section>
-          <div className="principle">
-            <CompassMark />
-            <p>
-              Meaningful work starts with listening.
-              <br />
-              <span>Understand the need before writing the code.</span>
-            </p>
-          </div>
         </aside>
       </div>
     </>
   );
-}
-function CompassMark() {
-  return <Target size={22} />;
 }

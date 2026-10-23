@@ -6,7 +6,6 @@ import {
   FileText,
   Link,
   Trash2,
-  MessageSquare,
   ArrowUpRight,
 } from "lucide-react";
 import { useApp } from "./store";
@@ -25,7 +24,6 @@ export function Community() {
   const [create, setCreate] = useState(false),
     [active, setActive] = useState(routedSource ?? ""),
     [query, setQuery] = useState(""),
-    [matches, setMatches] = useState<string[] | null>(null),
     [title, setTitle] = useState(""),
     [text, setText] = useState(""),
     [format, setFormat] = useState("manual"),
@@ -37,14 +35,20 @@ export function Community() {
     [kind, setKind] = useState<Annotation["kind"]>("action"),
     [note, setNote] = useState("");
   if (!s) return null;
-  const sources = s.sources.filter((x) => !query || matches?.includes(x.id)),
-    source = s.sources.find((x) => x.id === active) ?? sources[0];
+  const term = query.trim().toLowerCase();
+  const sources = s.sources.filter(
+      (x) =>
+        !term ||
+        [x.title, x.text, x.repo, x.format].some((value) =>
+          value.toLowerCase().includes(term),
+        ),
+    ),
+    source = sources.find((x) => x.id === active) ?? sources[0];
   return (
     <>
       <Heading
-        eyebrow="LISTEN. CONNECT. UNDERSTAND."
         title="Community context"
-        description="Bring the conversations you’re allowed to keep. No bots or workspace permissions needed."
+        description="Read imported files, annotate passages, and link them to issues."
         actions={
           <Button onClick={() => setCreate(!create)}>
             <Plus size={16} />
@@ -52,19 +56,6 @@ export function Community() {
           </Button>
         }
       />
-      <div className="context-notice">
-        <MessageSquare size={20} />
-        <div>
-          <b>
-            Your community doesn’t allow integrations? You’re in the right
-            place.
-          </b>
-          <p>
-            Write a note, paste shareable messages, or import an authorized
-            transcript. Sources keep their provenance.
-          </p>
-        </div>
-      </div>
       {create && (
         <form
           className="panel source-form"
@@ -183,20 +174,18 @@ export function Community() {
             <input
               aria-label="Search community"
               value={query}
-              onChange={async (e) => {
-                const q = e.target.value;
-                setQuery(q);
-                const result = await window.compass.snapshot(q);
-                setMatches(result.search ?? null);
-              }}
+              onChange={(e) => setQuery(e.target.value)}
               placeholder="Search local sources…"
             />
           </div>
-          <div className="list-caption">{sources.length} sources</div>
+          <div className="list-caption">
+            {sources.length} {sources.length === 1 ? "source" : "sources"}
+          </div>
           {sources.map((x) => (
             <button
               className={`source-entry ${source?.id === x.id ? "active" : ""}`}
               key={x.id}
+              aria-current={source?.id === x.id ? "true" : undefined}
               onClick={() => {
                 setActive(x.id);
                 setPassage("");
@@ -208,13 +197,6 @@ export function Community() {
                 <small>
                   {x.date} · {x.format.toUpperCase()}
                 </small>
-                <Badge tone={x.provenance === "demo" ? "amber" : "neutral"}>
-                  {x.provenance === "demo"
-                    ? "Synthetic demo"
-                    : x.provenance === "manual"
-                      ? "User-entered"
-                      : "User-imported"}
-                </Badge>
               </div>
             </button>
           ))}
@@ -224,10 +206,12 @@ export function Community() {
             <>
               <div className="section-title">
                 <div>
-                  <div className="eyebrow">
+                  <div className="source-kind">
                     {source.provenance === "demo"
-                      ? "SYNTHETIC DEMO DATA"
-                      : "LOCALLY SUPPLIED · UNVERIFIED"}
+                      ? "Synthetic demo source"
+                      : source.provenance === "manual"
+                        ? "Local note · unverified"
+                        : "Imported file · unverified"}
                   </div>
                   <h2>{source.title}</h2>
                   <p>
@@ -256,20 +240,31 @@ export function Community() {
               )}
               <div
                 className="transcript"
+                role="region"
+                aria-label={`Contents of ${source.title}`}
+                tabIndex={0}
                 onMouseUp={() => {
                   const selection = window.getSelection()?.toString();
                   if (selection && source.text.includes(selection))
                     setPassage(selection);
                 }}
               >
-                {source.segments.map((seg, n) => (
-                  <div className="transcript-segment" key={n}>
-                    {seg.timestamp && (
-                      <span className="timecode">{seg.timestamp}</span>
-                    )}
-                    <Markdown>{seg.text}</Markdown>
-                  </div>
-                ))}
+                {source.format === "md" ? (
+                  <Markdown>{source.text}</Markdown>
+                ) : ["txt", "manual", "paste", "link"].includes(
+                    source.format,
+                  ) ? (
+                  <div className="source-plain-text">{source.text}</div>
+                ) : (
+                  source.segments.map((seg, n) => (
+                    <div className="transcript-segment" key={n}>
+                      {seg.timestamp && (
+                        <span className="timecode">{seg.timestamp}</span>
+                      )}
+                      <div className="source-plain-text">{seg.text}</div>
+                    </div>
+                  ))
+                )}
               </div>
               <h3>
                 <Link size={15} /> Linked engineering work
@@ -367,8 +362,10 @@ export function Community() {
               </form>
             </>
           ) : (
-            <Empty title="Keep the context behind the code">
-              Capture your first note or import an authorized transcript.
+            <Empty title={query ? "No matching sources" : "No sources yet"}>
+              {query
+                ? "Try a different title or phrase."
+                : "Capture a note or import a transcript to start your library."}
             </Empty>
           )}
         </section>

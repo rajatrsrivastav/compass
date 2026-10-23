@@ -1,11 +1,5 @@
 import { useState } from "react";
-import {
-  Compass,
-  ArrowRight,
-  Database,
-  ShieldCheck,
-  GitPullRequest,
-} from "lucide-react";
+import { Compass, ArrowRight, FolderGit2 } from "lucide-react";
 import { useApp } from "./store";
 import { Button } from "./components/ui/button";
 export const goals = [
@@ -18,6 +12,8 @@ export const goals = [
 export function Onboarding() {
   const { data, act, busy } = useApp();
   const [profile, setProfile] = useState(data!.profile);
+  const bundled = data?.repositories.find((r) => r.bundledAt);
+  const items = data?.items.filter((i) => i.repo === bundled?.id) ?? [];
   return (
     <div className="onboarding">
       <div className="onboarding-brand">
@@ -25,38 +21,46 @@ export function Onboarding() {
         <b>OSS Compass</b>
       </div>
       <div className="onboarding-grid">
-        <section>
-          <div className="eyebrow">YOUR NEXT MEANINGFUL CONTRIBUTION</div>
-          <h1>
-            Find your place.
-            <br />
-            <span>Make an impact.</span>
-          </h1>
+        <section className="onboarding-project">
+          <h1>Create a local workspace</h1>
           <p>
-            A calmer workspace for understanding open-source projects, listening
-            to communities, and doing work that matters.
+            Review issues, read project documents, and keep your contribution
+            notes on this device.
           </p>
-          <div className="intro-feature">
-            <GitPullRequest />
-            <div>
-              <b>Context before contribution</b>
-              <p>Connect issues, reviews, and community conversations.</p>
+          {bundled && (
+            <div className="onboarding-snapshot">
+              <div className="project-caption">
+                <FolderGit2 size={16} /> Included repository
+              </div>
+              <h2>{bundled.name}</h2>
+              <p>{bundled.description}</p>
+              <dl>
+                <div>
+                  <dt>Open issues</dt>
+                  <dd>
+                    {
+                      items.filter(
+                        (i) => i.kind === "issue" && i.state === "open",
+                      ).length
+                    }
+                  </dd>
+                </div>
+                <div>
+                  <dt>Open pull requests</dt>
+                  <dd>
+                    {
+                      items.filter((i) => i.kind === "pr" && i.state === "open")
+                        .length
+                    }
+                  </dd>
+                </div>
+                <div>
+                  <dt>Milestones</dt>
+                  <dd>{bundled.milestones?.length ?? 0}</dd>
+                </div>
+              </dl>
             </div>
-          </div>
-          <div className="intro-feature">
-            <Database />
-            <div>
-              <b>Your workspace, on your device</b>
-              <p>Local SQLite storage. No hosted account required.</p>
-            </div>
-          </div>
-          <div className="intro-feature">
-            <ShieldCheck />
-            <div>
-              <b>Thoughtful by design</b>
-              <p>Private notes and reviews. Nothing posts automatically.</p>
-            </div>
-          </div>
+          )}
         </section>
         <form
           className="panel onboarding-form"
@@ -68,9 +72,8 @@ export function Onboarding() {
             });
           }}
         >
-          <BadgeLabel />
-          <h2>Set your direction</h2>
-          <p>We’ll use this to explain which opportunities may fit.</p>
+          <h2>Contributor profile</h2>
+          <p>Your skills and interests help rank open issues.</p>
           <label>
             GitHub username
             <input
@@ -133,14 +136,9 @@ export function Onboarding() {
             Create my workspace
             <ArrowRight size={16} />
           </Button>
-          <small>
-            No API key needed. You can explore synthetic demo data after setup.
-          </small>
+          <small>You can change this profile in Settings.</small>
         </form>
       </div>
     </div>
   );
-}
-function BadgeLabel() {
-  return <div className="eyebrow">WELCOME ABOARD</div>;
 }

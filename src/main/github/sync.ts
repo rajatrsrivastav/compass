@@ -1,7 +1,7 @@
 import type { Store } from "../database/store";
 import { fetchGuidance } from "./guidance";
 import { GitHubClient, GitHubError } from "./client";
-import type { Item, Comment, Repository } from "../../shared/types";
+import type { Item, Comment, Milestone, Repository } from "../../shared/types";
 const comments = (rows: any[]): Comment[] =>
   rows.map((c) => ({
     author: c.user?.login ?? "unknown",
@@ -25,6 +25,7 @@ export function mapItem(repo: string, row: any, kind: "issue" | "pr"): Item {
       typeof l === "string" ? l : l.name,
     ),
     assignees: (row.assignees ?? []).map((u: any) => u.login),
+    milestone: row.milestone?.number ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     observedAt: new Date().toISOString(),
@@ -36,6 +37,18 @@ export function mapItem(repo: string, row: any, kind: "issue" | "pr"): Item {
     saved: false,
     reviewState: "Not reviewed",
     note: "",
+  };
+}
+function mapMilestone(row: any): Milestone {
+  return {
+    number: row.number,
+    title: row.title,
+    description: row.description ?? "",
+    state: row.state,
+    openItems: row.open_issues,
+    closedItems: row.closed_issues,
+    dueOn: row.due_on,
+    url: row.html_url,
   };
 }
 export class SyncService {
@@ -88,6 +101,24 @@ export class SyncService {
       let partial = issues.partial || prs.partial;
       let enrichmentStopped = false;
       const warnings: string[] = [];
+      let { milestones, milestonesObservedAt } = repo;
+      if (this.client.remaining === null || this.client.remaining > 8) {
+        try {
+          const list = await this.client.pages<any>(
+            `/repos/${id}/milestones?state=all&per_page=100`,
+            500,
+            signal,
+          );
+          if (list.partial) throw new Error("Milestone list truncated");
+          milestones = list.data.map(mapMilestone);
+          milestonesObservedAt = new Date().toISOString();
+        } catch (error) {
+          if (signal.aborted) throw error;
+          warnings.push(
+            "Milestones could not be refreshed. Cached milestones are retained.",
+          );
+        }
+      }
       // Enrich a bounded set. Preserve older details for records outside this budget.
       for (const item of items) {
         const old = this.store.get("items", item.id);
@@ -223,6 +254,9 @@ export class SyncService {
           syncedAt: new Date().toISOString(),
           error: warnings.length ? warnings.join("; ") : null,
           partial,
+          workCatalogComplete: !issues.partial && !prs.partial,
+          milestones,
+          milestonesObservedAt,
           guidance,
           briefing,
           remaining: this.client.remaining,

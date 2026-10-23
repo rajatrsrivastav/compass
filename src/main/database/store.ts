@@ -259,6 +259,7 @@ export class Store {
       reviewState: old?.reviewState ?? "Not reviewed",
       noteHeadSha: old?.noteHeadSha,
       inspections: old?.inspections,
+      boardStage: old?.boardStage,
     });
     if (
       !baseline &&
