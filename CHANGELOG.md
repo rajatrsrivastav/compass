@@ -15,7 +15,7 @@
 - Indexed explicit issue/PR references, competing-work coverage and Before You Start; root/.github/docs organization briefings with evidence and policy uncertainty.
 - Persistent private PR inspections, cached-head comparison, newly observed feedback, stale-note warnings and per-stream freshness.
 - Optional OpenAI provider with OS/session key storage, bounded FTS5 evidence retrieval, exact preview/consent, citation-ID validation and local usage limits. Deterministic mode retained; live provider validation outstanding.
-- Honest post-Codex/Devin audit evidence, regression tests and updated course documentation. No Devin scan/remediation ran.
+- Honest code review and external scan records, regression tests and updated course documentation. No Devin scan/remediation ran.
 
 ## 0.1.0 — 2026-10-22
 

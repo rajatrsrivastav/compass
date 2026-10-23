@@ -11,7 +11,7 @@ Availability checked in the audit session beginning 2026-10-22. Local baseline: 
 | Repository integration / ownership | No Git remote or authorized Devin repository mapping available |
 | Profiles / usage budget | Unavailable, no paid execution authorized against an identified account |
 | Scan category / ID / URL / completion | None; not submitted |
-| Findings / severity / affected lines | None from Devin; local findings are in POST_CODEX_AUDIT.md |
+| Findings / severity / affected lines | None from Devin; local findings are in CODE_REVIEW.md |
 | Remediation sessions / PRs / merges | None |
 | Consumption | No scan/remediation API calls made; account-wide usage unknown |
 

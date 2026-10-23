@@ -2,7 +2,7 @@
 
 Make contributions that improve a real workflow. Reproduce the problem, explain its impact, and keep the change focused. Respect upstream community rules; never automate public feedback merely to increase activity counts.
 
-1. Create a feature branch (default prefix `codex/` for assisted work).
+1. Create a descriptive feature branch, such as `feature/import-validation`.
 2. Read the architecture and the original product requirements.
 3. Implement a complete vertical slice with clear provenance and usable offline states.
 4. Run typecheck, lint, relevant unit/integration tests, and Electron tests for changed desktop flows.

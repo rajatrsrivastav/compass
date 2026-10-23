@@ -8,7 +8,7 @@ Codex assisted with architecture, implementation, UI, debugging, tests, document
 
 1. **Initial build brief, 2026-10-22:** the user supplied the [complete master request](docs/ai/MASTER_BUILD_PROMPT.md), asking for an Electron contribution workspace and honest course evidence. This preserved document is the user brief, not platform/system instructions.
 2. The user sent **“continue”** to resume verification and delivery. Its outcomes are documented in the [October 22 journal](docs/development-journal/2026-10-22.md) and commits below.
-3. **Post-build audit, 2026-10-22–23:** the user supplied the [complete audit/upgrade request](docs/ai/POST_CODEX_REQUEST.md) and later sent **“continue”**. The date range comes from the actual continuation records, not a multi-week reconstruction.
+3. **Post-build audit, 2026-10-22–23:** the user supplied the [complete audit/upgrade request](docs/ai/DEVELOPMENT_REVIEW_REQUEST.md) and later sent **“continue”**. The date range comes from the actual continuation records, not a multi-week reconstruction.
 4. **Final submission request, 2026-10-23:** the user asked: “Prepare this Desktop Application repository for **final university course submission**.” The request explicitly required repository cleanup, functional verification, a macOS DMG, a concise README, genuine AI history, a verified final commit/push, and GitHub submission/download links. This is an excerpt and summary of the current request, not a fabricated full transcript.
 
 ## Evidence-based development summaries
@@ -37,7 +37,7 @@ The audit finished with 53 local tests and three real Electron workflows, a sepa
 
 ### Final submission preparation: October 23
 
-The current Codex session inspected Git history, source/services/UI, dependency and native-module handling, packaging, tests and documentation. It preserved course requirements, actual user briefs, journals, curated screenshots, test fixtures and previous commits. Repeated setup/AI summary documents were consolidated into README and this history; their originals remain in Git at `f01061c`. They were documentation, not model instructions used by the running app. The actual provider instructions remain in `src/main/ai/provider.ts`; the historical deterministic template remains in the database implementation. Synthetic demo examples remain explicitly separate in [DEMO_CHAT_HISTORY](docs/ai/DEMO_CHAT_HISTORY.md).
+The submission review covered Git history, source code, services, and UI, dependency and native-module handling, packaging, tests and documentation. It preserved course requirements, actual user briefs, journals, curated screenshots, test fixtures and previous commits. Repeated setup/AI summary documents were consolidated into README and this history; their originals remain in Git at `f01061c`. They were documentation, not model instructions used by the running app. The actual provider instructions remain in `src/main/ai/provider.ts`; the historical deterministic template remains in the database implementation. Synthetic demo examples remain explicitly separate in [DEMO_CHAT_HISTORY](docs/ai/DEMO_CHAT_HISTORY.md).
 
 Release changes add an original vector compass icon, version 0.2.1, universal macOS DMG packaging, disk-image/copied-app verification, and macOS CI artifact upload. Packaged apps ignore the development-server environment override and omit developer tools/menu controls. A universal merge initially rejected identical SQLite prebuilds; inspecting the actual SQLite 13 loader showed that both architecture-specific Node-API binaries must be retained. A subsequent archive inspection caught platform-specific file filters admitting source/test files; the final positive whitelist excludes those files. The packaged smoke test initially queried a preference Electron does not expose; it now verifies that developer tools cannot actually open. These intermediate issues were corrected before publication. Test screenshots now go to ignored output rather than overwriting course evidence. Ignore rules also cover local editor configuration, signing material, temporary files and disk images. No implemented feature or earlier Git commit was removed.
 
@@ -65,3 +65,7 @@ The timestamps below are from `git log`, not reconstructed dates. Commit message
 | `f01061c` | 2026-10-23T05:20:46+05:30 | docs: record verified 0.2 release history and source completeness |
 
 The release source commit introducing this file is `6a07206`. Subsequent publication/CI documentation updates use their actual commit timestamps; inspect `git log --format=fuller -- AI_CHAT_HISTORY.md`. A commit cannot truthfully embed its own final hash before it exists. Earlier detailed file-level milestones remain in [GIT_MILESTONES.md](docs/course/GIT_MILESTONES.md). No commits were rewritten or backdated.
+
+## Presentation cleanup
+
+The user requested cleaner branch names and wording while retaining the application and honest AI history. The submission branch is now `main`; review documents use project-specific filenames. Original user requests and commit records remain preserved.

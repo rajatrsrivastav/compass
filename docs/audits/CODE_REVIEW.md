@@ -1,4 +1,4 @@
-# Post-Codex audit
+# Code review
 
 Auditor: Codex, in the actual continuation session beginning 2026-10-22. This is not a Claude or Devin report. Baseline: `e68c6b7627889772f1158f600749da22494c04ad` (`v0.1.0`). Clean branch `codex/oss-compass`; no Git remote. Existing architecture, journal, migrations, UI actions, service implementations, tests and course records inspected. The separately mentioned OpenSource Copilot research report was not present; the supplied brief provides the requirements.
 

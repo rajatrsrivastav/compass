@@ -104,4 +104,4 @@ New behavior coverage: encryption/write failure preserves old credentials; malfo
 
 The Electron suite verifies modal focus entry/Tab containment, native imports/exports, saved settings/notes/inspection history/conversations after restart, demo separation, briefing rendering, optional cloud preview/consent/invalidation, and runtime context isolation. New screenshots were inspected visually. This is not a complete WCAG audit. Windows, signing/notarization, real personal-token OS persistence, and live OpenAI quality/access remain unverified. The first baseline sandboxed launch failed with EPERM/SIGABRT; rerunning with desktop launch permission passed. An initial new focus assertion failed, was fixed, and passed before its milestone commit.
 
-See [audit](docs/audits/POST_CODEX_AUDIT.md), [journal](docs/development-journal/2026-10-23.md) and [artifact evidence](docs/course/BUILD_ARTIFACTS.md).
+See [audit](docs/audits/CODE_REVIEW.md), [journal](docs/development-journal/2026-10-23.md) and [artifact evidence](docs/course/BUILD_ARTIFACTS.md).
