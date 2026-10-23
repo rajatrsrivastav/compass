@@ -22,6 +22,8 @@ The submission build is **0.2.1**, packaged as `OSS-Compass-0.2.1-universal.dmg`
 
 Download the DMG from the [0.2.1 release](https://github.com/rajatrsrivastav/compass/releases/tag/v0.2.1). The [direct DMG download](https://github.com/rajatrsrivastav/compass/releases/download/v0.2.1/OSS-Compass-0.2.1-universal.dmg) is accompanied by [SHA256SUMS.txt](https://github.com/rajatrsrivastav/compass/releases/download/v0.2.1/SHA256SUMS.txt). The locally built file is also in `release/`. The **Verify OSS Compass** workflow builds a downloadable **OSS-Compass-macOS-universal-unsigned** artifact containing the DMG and `SHA256SUMS.txt`. Open the repository's **Actions** tab, select a successful run, download the artifact, and unzip it. GitHub artifact downloads require sign-in and expire after 90 days.
 
+If the repository is private, sign in to GitHub with repository access before downloading; your instructor also needs access to the source and release links.
+
 Open the DMG, drag **OSS Compass.app** onto **Applications**, eject the disk image, and launch the copied app. macOS may block this unsigned course build; if you trust its source, use the app-specific **Open Anyway** control in System Settings → Privacy & Security. See [Apple’s guidance](https://support.apple.com/en-au/102445); do not disable system security globally. Verify the file against its supplied SHA-256 checksum before installation.
 
 ## Development
@@ -50,7 +52,7 @@ npm run package:win           # Windows x64 NSIS installer, run on Windows
 npm run package               # unpacked application for the host
 ```
 
-Artifacts go into ignored `release/`. The universal package merges the Electron architectures and retains both architecture-specific SQLite Node-API binaries. No signing credentials or publishing are selected automatically. The macOS workflow repeats the build and verifies the DMG and copied application; Windows CI builds the installer separately. Windows installation/runtime remains unverified locally.
+Artifacts go into ignored `release/`. The universal package merges the Electron architectures and retains both architecture-specific SQLite Node-API binaries. No signing credentials or publishing are selected automatically. The macOS workflow repeats the build and verifies the DMG and copied application; Windows CI builds the installer separately. Windows CI passed the source-app desktop workflows and NSIS build; installation and launch of the packaged Windows installer remain unverified.
 
 ```sh
 node scripts/verify-dmg.mjs release/OSS-Compass-0.2.1-universal.dmg
@@ -90,7 +92,7 @@ npm run test:live             # optional public GitHub test; depends on network/
 
 The scripts prepare native dependencies for their target runtime: `npm test` runs the Node rebuild; desktop scripts and packaging run the Electron rebuild. The locked SQLite 13 package uses Node-API prebuilds selected by platform and architecture. Do not run them concurrently against the same `node_modules`. If switching manually, use `npm run native:node` or `npm run native:electron`.
 
-Submission verification: clean `npm ci`, typecheck and lint; **53 local tests passed**, with live/benchmark opt-ins skipped; **3 Electron workflows passed**, including restart persistence, imports/exports and cloud consent. The final universal DMG passed integrity, metadata, package-content and architecture checks; an app copied from it passed the Apple Silicon launch/SQLite smoke test. No live OpenAI account call, Intel or Windows runtime test, independent accessibility audit, Developer ID signing or notarization is claimed. Current and historical results are recorded in [TESTING.md](TESTING.md).
+Submission verification: clean `npm ci`, typecheck and lint; **53 local tests passed**, with live/benchmark opt-ins skipped; **3 Electron workflows passed**, including restart persistence, imports/exports and cloud consent. The final universal DMG passed integrity, metadata, package-content and architecture checks; an app copied from it passed the Apple Silicon launch/SQLite smoke test. No live OpenAI account call, Intel or Windows runtime test, independent accessibility audit, Developer ID signing or notarization is claimed. [macOS and Windows CI](https://github.com/rajatrsrivastav/compass/actions/runs/39987448617) also passed installation, typecheck, lint, local/desktop tests and packaging. macOS CI additionally verified the DMG and copied app. The published release DMG was downloaded with authenticated access and matched the local file byte-for-byte. Current and historical results are recorded in [TESTING.md](TESTING.md).
 
 Use [AI_CHAT_HISTORY.md](AI_CHAT_HISTORY.md) for the course's **AI Chat History Link**. It separates actual user prompts from evidence-based session summaries. Original briefs, dated journals, Git milestones, requirements, and the [demonstration walkthrough](docs/course/DEMO_WALKTHROUGH.md) remain available. Synthetic in-app conversations are examples, not development transcripts.
 

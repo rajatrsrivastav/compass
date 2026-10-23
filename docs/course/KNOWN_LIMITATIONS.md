@@ -11,7 +11,7 @@
 - Briefings display recent observed changes with timestamps. They are not exhaustive daily activity reports, operating-system notifications, or background work when the app is closed.
 - SQLite content is not encrypted. Deleting sources does not rewrite old conversation excerpts, exported files, or backups. The security document explains logical deletion semantics.
 - A full independent accessibility audit, localization, automatic updates, code signing, notarization, crash recovery under forced power loss, and large-scale performance work remain.
-- The full Windows build/runtime path must be validated on Windows. Native SQLite makes cross-platform packaging more than changing an output extension. CI configuration is provided but a remote CI run is not claimed.
+- Windows CI passed dependency installation, compiler/linter, local and real Electron workflow tests, and NSIS packaging for 0.2.1. Installation and launch of the packaged Windows installer on a user machine remain unverified. Native SQLite makes cross-platform packaging more than changing an output extension.
 
 - Live core synchronization passed for two public repositories; complete discussion/check coverage is not claimed because the low-quota run deliberately deferred optional enrichment.
 - Baseline npm ci reported eight moderate development paths; the final full and production npm audits returned zero on 2026-10-23 without dependency changes. This is registry output, not proof that the earlier advisory paths were fixed. Recheck before distribution.

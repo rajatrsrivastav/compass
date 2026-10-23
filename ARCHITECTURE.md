@@ -46,7 +46,7 @@ Chat defaults to an offline deterministic evidence assistant. It stores user int
 
 ## Build
 
-Electron Vite creates separate main, CJS sandbox-compatible preload, and renderer bundles. Better-sqlite3 stays external and is unpacked from ASAR. electron-builder rebuilds its native ABI for the target Electron release. Windows NSIS configuration and Windows CI are provided; local validation uses the available macOS arm64 host. See README for packaging commands and signing limitations.
+Electron Vite creates separate main, CJS sandbox-compatible preload, and renderer bundles. Better-sqlite3 stays external and is unpacked from ASAR. electron-builder prepares native dependencies for the target. The locked better-sqlite3 13 package selects a Node-API prebuild by platform and architecture; the universal Mac app retains both darwin prebuilds. Windows NSIS configuration and Windows CI are provided; local validation uses the available macOS arm64 host. See README for packaging commands and signing limitations.
 
 ## Design references consulted
 

@@ -8,8 +8,10 @@
 - macOS 13+, Intel and Apple Silicon binaries. Electron is universal; SQLite retains the matching Node-API prebuild for each architecture.
 - Disk-image integrity, read-only mount, Applications shortcut, custom icon, version 0.2.1, bundle ID and both architectures verified. Archive contains only production bundles, runtime dependencies, metadata and license.
 - A copy from the DMG launched from a temporary Applications directory on Apple Silicon. SQLite onboarding, demo seed, navigation and production developer-tool restrictions passed. Temporary installation/profile removed and image detached.
-- No Developer ID signing or notarization; linker ad-hoc signature only, no TeamIdentifier. Intel hardware, downloaded-file Gatekeeper flow, system installation and Windows runtime remain unverified.
+- No Developer ID signing or notarization; linker ad-hoc signature only, no TeamIdentifier. Intel hardware, downloaded-file Gatekeeper flow, system installation and packaged Windows installer launch remain unverified.
 - Build artifacts are ignored by Git and uploaded separately. Rebuild with `npm ci` and `npm run package:mac`; verify with `node scripts/verify-dmg.mjs release/OSS-Compass-0.2.1-universal.dmg`. CI provides a separate artifact per successful macOS run; its bytes/checksum may differ from the local release.
+
+The published DMG was downloaded with authenticated GitHub access and compared byte-for-byte with the local image. [CI](https://github.com/rajatrsrivastav/compass/actions/runs/39987448617) separately passed macOS and Windows tests/packaging and uploaded both platform artifacts. Repository access is required while the repository is private.
 
 See [TESTING](../../TESTING.md) for actual commands, intermediate corrections and limits.
 

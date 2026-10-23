@@ -14,7 +14,9 @@
 
 Intermediate packaging failures were corrected: universal merging rejected identical SQLite prebuilds; the actual SQLite 13 loader required retaining both Mac architecture files. An exclusion-only macOS file filter admitted development files; adding a positive production whitelist fixed this. The first strengthened smoke assertion queried an Electron preference absent from its snapshot; the corrected test checks that developer tools cannot actually open. The successful final verification used the rebuilt, cleaned DMG, not an earlier candidate.
 
-The public GitHub destination is [rajatrsrivastav/compass](https://github.com/rajatrsrivastav/compass). Local verification precedes publication; CI run outcomes are available on GitHub and are not inferred from this local report.
+The GitHub destination is [rajatrsrivastav/compass](https://github.com/rajatrsrivastav/compass). The source branch and v0.2.1 tag were pushed without force. The release DMG and checksum were uploaded, downloaded through authenticated GitHub access, and compared byte-for-byte with the local files. The repository currently requires authenticated access.
+
+[Independent CI run](https://github.com/rajatrsrivastav/compass/actions/runs/39987448617) completed successfully for macOS and Windows on the release source commit `6a07206`: locked installation, typecheck, lint, local tests, three desktop workflows and platform packaging passed. macOS also passed disk-image/copied-app verification and uploaded a universal DMG artifact; Windows uploaded its NSIS installer. Installing and launching that packaged Windows installer remains unverified. This later CI result does not change the historical local-only reports below.
 
 ## Historical verification records
 
