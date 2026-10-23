@@ -2,9 +2,12 @@ appId: dev.osscompass.desktop
 productName: OSS Compass
 directories:
   output: release
+  buildResources: resources
+artifactName: OSS-Compass-${version}-${arch}.${ext}
 files:
   - out/**/*
   - package.json
+  - LICENSE
 asar: true
 asarUnpack:
   - node_modules/better-sqlite3/**/*
@@ -17,8 +20,30 @@ nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
 mac:
-  target: zip
+  target:
+    - target: dmg
+      arch: [universal]
+  icon: resources/icon.icns
   category: public.app-category.developer-tools
   identity: null
+  # better-sqlite3 13 selects its Node-API binary by process.arch. Both
+  # architecture-specific prebuilds must survive the universal app merge.
+  x64ArchFiles: '**/better-sqlite3/prebuilds/darwin-*.node'
+  files:
+    - out/**/*
+    - package.json
+    - LICENSE
+    - '!node_modules/better-sqlite3/prebuilds/linux*.node'
+    - '!node_modules/better-sqlite3/prebuilds/win32-*.node'
+dmg:
+  title: OSS Compass
+  contents:
+    - x: 150
+      y: 180
+      type: file
+    - x: 450
+      y: 180
+      type: link
+      path: /Applications
 linux:
   target: AppImage

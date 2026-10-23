@@ -1,3 +1,22 @@
+# Build artifacts
+
+## Final submission 0.2.1 — 2026-10-23
+
+- [Download universal DMG](https://github.com/rajatrsrivastav/compass/releases/download/v0.2.1/OSS-Compass-0.2.1-universal.dmg) and [checksum](https://github.com/rajatrsrivastav/compass/releases/download/v0.2.1/SHA256SUMS.txt).
+- File: `release/OSS-Compass-0.2.1-universal.dmg`, 231,752,149 bytes.
+- SHA-256: `53ef6f2c53a1f3331e52751509b2a4484f5e660b07c556783b65641b6507ca7b`.
+- macOS 13+, Intel and Apple Silicon binaries. Electron is universal; SQLite retains the matching Node-API prebuild for each architecture.
+- Disk-image integrity, read-only mount, Applications shortcut, custom icon, version 0.2.1, bundle ID and both architectures verified. Archive contains only production bundles, runtime dependencies, metadata and license.
+- A copy from the DMG launched from a temporary Applications directory on Apple Silicon. SQLite onboarding, demo seed, navigation and production developer-tool restrictions passed. Temporary installation/profile removed and image detached.
+- No Developer ID signing or notarization; linker ad-hoc signature only, no TeamIdentifier. Intel hardware, downloaded-file Gatekeeper flow, system installation and Windows runtime remain unverified.
+- Build artifacts are ignored by Git and uploaded separately. Rebuild with `npm ci` and `npm run package:mac`; verify with `node scripts/verify-dmg.mjs release/OSS-Compass-0.2.1-universal.dmg`. CI provides a separate artifact per successful macOS run; its bytes/checksum may differ from the local release.
+
+See [TESTING](../../TESTING.md) for actual commands, intermediate corrections and limits.
+
+## Historical ZIP builds
+
+The obsolete local ZIP files and old unpacked arm64 bundle were removed during submission cleanup. Their recorded hashes and previous Git commits remain as development evidence.
+
 # Actual build artifacts — 2026-10-22
 
 - Platform: macOS arm64.

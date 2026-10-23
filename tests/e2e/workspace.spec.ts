@@ -34,7 +34,7 @@ test("complete offline contribution workflow survives a desktop restart", async 
       page.getByText("Missing policy is not permission", { exact: false }),
     ).toBeVisible();
     await page.screenshot({
-      path: "docs/screenshots/organization-briefing.png",
+      path: "test-results/screenshots/organization-briefing.png",
       fullPage: true,
     });
     await page
@@ -56,7 +56,9 @@ test("complete offline contribution workflow survives a desktop restart", async 
       .click();
     const details = page.getByRole("dialog", { name: "Item details" });
     await expect(details).toBeVisible();
-    await details.screenshot({ path: "docs/screenshots/before-you-start.png" });
+    await details.screenshot({
+      path: "test-results/screenshots/before-you-start.png",
+    });
     await expect(
       page.getByText("BEFORE YOU START", { exact: true }),
     ).toBeVisible();
@@ -91,7 +93,7 @@ test("complete offline contribution workflow survives a desktop restart", async 
     ).toBeVisible();
     await page
       .getByRole("dialog")
-      .screenshot({ path: "docs/screenshots/review-memory.png" });
+      .screenshot({ path: "test-results/screenshots/review-memory.png" });
     await page.getByRole("button", { name: "Close details" }).click();
     await page
       .getByRole("button", { name: "Community Context", exact: true })
@@ -157,9 +159,9 @@ test("complete offline contribution workflow survives a desktop restart", async 
         .getByRole("button", { name: /Reduce canvas redraws during playback/ })
         .last(),
     ).toBeVisible();
-    mkdirSync("docs/screenshots", { recursive: true });
+    mkdirSync("test-results/screenshots", { recursive: true });
     await page.screenshot({
-      path: "docs/screenshots/overview-dark.png",
+      path: "test-results/screenshots/overview-dark.png",
       fullPage: true,
     });
     const security = await app.evaluate(({ BrowserWindow }) =>
@@ -221,7 +223,7 @@ test("complete offline contribution workflow survives a desktop restart", async 
       page.getByText("What should I investigate?", { exact: true }),
     ).toBeVisible();
     await page.screenshot({
-      path: "docs/screenshots/copilot.png",
+      path: "test-results/screenshots/copilot.png",
       fullPage: true,
     });
     // Native file-dialog import uses the same validated pipeline, without a platform connector.
@@ -243,7 +245,7 @@ test("complete offline contribution workflow survives a desktop restart", async 
     await page.getByRole("button", { name: "Close editor" }).click();
     await page.getByRole("button", { name: /Imported VTT workshop/ }).click();
     await page.screenshot({
-      path: "docs/screenshots/community.png",
+      path: "test-results/screenshots/community.png",
       fullPage: true,
     });
     await page.getByRole("button", { name: "Settings & privacy" }).click();
@@ -257,7 +259,7 @@ test("complete offline contribution workflow survives a desktop restart", async 
       page.getByRole("button", { name: /My real local conversation/ }),
     ).toBeVisible();
     await page.screenshot({
-      path: "docs/screenshots/copilot-light.png",
+      path: "test-results/screenshots/copilot-light.png",
       fullPage: true,
     });
   } finally {

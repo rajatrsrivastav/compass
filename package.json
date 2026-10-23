@@ -1,6 +1,6 @@
 {
   "name": "oss-compass",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A local-first open source contribution workspace",
   "main": "out/main/index.js",
   "author": "OSS Compass contributors",
@@ -19,12 +19,14 @@
     "native:electron": "electron-builder install-app-deps",
     "postinstall": "electron-builder install-app-deps",
     "package": "npm run build && electron-builder --dir",
-    "package:win": "npm run build && electron-builder --win nsis --x64",
-    "package:mac": "npm run build && electron-builder --mac zip",
+    "package:win": "npm run build && electron-builder --win nsis --x64 --publish never",
+    "package:mac": "npm run build && electron-builder --mac dmg --universal --publish never",
     "history": "node scripts/history.mjs",
     "predev": "npm run native:electron",
     "prestart": "npm run native:electron",
-    "test:live": "npm run native:node && node scripts/live-test.mjs"
+    "test:live": "npm run native:node && node scripts/live-test.mjs",
+    "package:mac:arm64": "npm run build && electron-builder --mac dmg --arm64 --publish never",
+    "icon": "swift scripts/generate-icon.swift"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.5.0",

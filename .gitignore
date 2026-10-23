@@ -14,3 +14,17 @@ credentials*.enc
 credentials*.json
 .DS_Store
 *.log
+*.dmg
+*.blockmap
+*.tsbuildinfo
+.idea/
+.vscode/
+.npmrc
+*.pem
+*.p12
+*.pfx
+*.key
+*.mobileprovision
+*.tmp
+*.swp
+*.swo

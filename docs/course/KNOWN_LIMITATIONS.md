@@ -13,7 +13,6 @@
 - A full independent accessibility audit, localization, automatic updates, code signing, notarization, crash recovery under forced power loss, and large-scale performance work remain.
 - The full Windows build/runtime path must be validated on Windows. Native SQLite makes cross-platform packaging more than changing an output extension. CI configuration is provided but a remote CI run is not claimed.
 
-- The native bundle currently uses Electron’s default application icon; in-app branding is implemented.
 - Live core synchronization passed for two public repositories; complete discussion/check coverage is not claimed because the low-quota run deliberately deferred optional enrichment.
 - Baseline npm ci reported eight moderate development paths; the final full and production npm audits returned zero on 2026-10-23 without dependency changes. This is registry output, not proof that the earlier advisory paths were fixed. Recheck before distribution.
 

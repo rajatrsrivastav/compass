@@ -1,5 +1,23 @@
 # Testing and actual results
 
+## Final submission 0.2.1 — 2026-10-23
+
+- `npm ci`: clean locked installation, 542 packages, zero reported advisories. Library versions are unchanged.
+- `npm run typecheck`, `npm run lint`, `git diff --check`: passed.
+- `npm test`: 53 passed, two explicit live/benchmark opt-ins skipped (2.21 s).
+- `npm run test:e2e`: three real Electron workflows passed (31.2 s); source functionality and persistence checks remain intact. Fresh screenshots go to ignored test output.
+- `npm run package:mac`: passed, universal DMG with custom icon, Electron arm64/x86_64 and separate SQLite Node-API binaries for each architecture.
+- `node scripts/verify-dmg.mjs release/OSS-Compass-0.2.1-universal.dmg`: passed. Disk-image checksum valid; mounted read-only; Applications link, bundle ID/version/icon and architecture verified. Archive contains only LICENSE, node_modules, out, and package.json. App copied into a temporary Applications directory and launched with a fresh isolated profile; production renderer, disabled developer tools, onboarding, native SQLite, demo seed and issue navigation passed without renderer exceptions. The image was detached and the temporary copy/profile removed.
+- DMG size: 231,752,149 bytes. SHA-256: `53ef6f2c53a1f3331e52751509b2a4484f5e660b07c556783b65641b6507ca7b`.
+- Minimum macOS in Info.plist: 13.0. Actual launch host: Apple Silicon. Intel runtime, downloaded-file Gatekeeper flow, system Applications installation, Windows runtime and live OpenAI remain unverified.
+- No Developer ID signing or notarization. `identity: null` deliberately skips signing; the executable retains a linker ad-hoc signature with no TeamIdentifier or sealed resources, which does not authenticate the developer.
+
+Intermediate packaging failures were corrected: universal merging rejected identical SQLite prebuilds; the actual SQLite 13 loader required retaining both Mac architecture files. An exclusion-only macOS file filter admitted development files; adding a positive production whitelist fixed this. The first strengthened smoke assertion queried an Electron preference absent from its snapshot; the corrected test checks that developer tools cannot actually open. The successful final verification used the rebuilt, cleaned DMG, not an earlier candidate.
+
+The public GitHub destination is [rajatrsrivastav/compass](https://github.com/rajatrsrivastav/compass). Local verification precedes publication; CI run outcomes are available on GitHub and are not inferred from this local report.
+
+## Historical verification records
+
 Validated on 2026-10-22 using Node 22.16.0 and Electron 45.0.0 on macOS arm64.
 
 | Check | Actual outcome |
@@ -54,7 +72,7 @@ The earlier failure and successful retry are both retained in the development jo
 
 ## Visual and manual checks
 
-Electron-generated screenshots are in `docs/screenshots`. Overview and community screenshots were visually inspected for usable layout; the application exposes actual data rather than screenshot-backed controls. These images contain synthetic test records. Automated desktop checks are not represented as manual user testing or a complete accessibility audit.
+Curated Electron-generated screenshots are in `docs/screenshots`. New test runs write to ignored `test-results/screenshots` and do not overwrite course evidence. Overview and community screenshots were visually inspected for usable layout; the application exposes actual data rather than screenshot-backed controls. These images contain synthetic test records. Automated desktop checks are not represented as manual user testing or a complete accessibility audit.
 
 ## Audit and packaging notes
 

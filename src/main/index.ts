@@ -6,6 +6,7 @@ import {
   shell,
   safeStorage,
   session,
+  Menu,
 } from "electron";
 import { join, extname, basename } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -43,7 +44,7 @@ app.whenReady().then(() => {
   );
   const service = new Service(store, sync, credentials, aiCredentials);
   const renderer = join(here, "../renderer/index.html"),
-    dev = process.env.ELECTRON_RENDERER_URL;
+    dev = !app.isPackaged && process.env.ELECTRON_RENDERER_URL;
   const trusted = (url: string) =>
     dev
       ? new URL(url).origin === new URL(dev).origin
@@ -118,6 +119,28 @@ app.whenReady().then(() => {
     (_wc, _permission, callback) => callback(false),
   );
   session.defaultSession.setPermissionCheckHandler(() => false);
+  if (app.isPackaged) {
+    Menu.setApplicationMenu(
+      Menu.buildFromTemplate([
+        ...(process.platform === "darwin"
+          ? [{ role: "appMenu" as const }]
+          : []),
+        { role: "fileMenu" },
+        { role: "editMenu" },
+        {
+          label: "View",
+          submenu: [
+            { role: "resetZoom" },
+            { role: "zoomIn" },
+            { role: "zoomOut" },
+            { type: "separator" },
+            { role: "togglefullscreen" },
+          ],
+        },
+        { role: "windowMenu" },
+      ]),
+    );
+  }
   window = new BrowserWindow({
     width: 1440,
     height: 960,
@@ -131,6 +154,7 @@ app.whenReady().then(() => {
       nodeIntegration: false,
       sandbox: true,
       webSecurity: true,
+      devTools: !app.isPackaged,
     },
   });
   window.webContents.setWindowOpenHandler(() => ({ action: "deny" }));

@@ -50,7 +50,7 @@ test("cloud preview requires consent, shows exact passages and preserves local f
       .click();
     await expect(page.locator(".evidence-preview")).toContainText("canvas");
     await page.screenshot({
-      path: "docs/screenshots/cloud-consent.png",
+      path: "test-results/screenshots/cloud-consent.png",
       fullPage: true,
     });
     await page.getByLabel("I authorize sending this question").check();

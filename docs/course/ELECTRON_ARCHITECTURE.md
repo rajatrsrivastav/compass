@@ -8,7 +8,7 @@
 6. Show `src/main/github/client.ts`: read-only queued HTTP requests, pagination, ETags and error behavior. Then `sync.ts`: observations and baseline handling.
 7. Show Community Context: native import, size check, parser, source provenance, references and manual annotation.
 8. Show AI Copilot: conversation data in SQLite and truthful deterministic/demo origin markers.
-9. Show `electron.vite.config.ts` and `electron-builder.yml`: three bundles, native-module ABI rebuild, ASAR unpacking and NSIS target.
+9. Show `electron.vite.config.ts` and `electron-builder.yml`: three bundles, native-module ABI rebuild, ASAR unpacking and macOS DMG / Windows NSIS targets.
 10. Restart the app to demonstrate that settings, saved notes and conversations persist independently of the renderer state.
 
 The complete process diagram and tradeoffs are in the root ARCHITECTURE.md.
